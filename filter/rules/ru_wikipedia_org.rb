@@ -1,16 +1,9 @@
 #coding: utf-8
-system 'clear'
 
-class DefaultSite
-	def RemoveScript_Filter(page)
-	end
-
-	def RemoveNoscript_Filter(page)
-	end
-end
-
-class DefaultPage
-end
+require File.join(
+	File.dirname(__FILE__),
+	'default.rb'
+)
 
 class RuWikipediaOrg < DefaultSite
 	SCHEME = 'https'
@@ -29,7 +22,7 @@ class RuWikipediaOrg < DefaultSite
 		end
 	end
 
-	class Article < DefaultPage
+	#class Article < DefaultPage
 	class Article
 		def accept
 			['/wiki/*']
@@ -72,6 +65,3 @@ class RuWikipediaOrg < DefaultSite
 	def RemoveNavigation_Filter(page)
 	end
 end
-
-w = RuWikipediaOrg.new
-w.rule_for('https://ru.wikipedia.org/wiki/Linux')
