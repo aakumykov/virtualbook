@@ -2,14 +2,19 @@
 system 'clear'
 
 class DefaultSite
-	def self.links
-		puts 'Получаю определения ссылок'
+	def RemoveScript_Filter(page)
 	end
 
-	def RemoveScript_Filter
+	def RemoveNoscript_Filter(page)
 	end
+end
 
-	def RemoveNoscript_Filter
+class DefaultPage
+	def link(uri)
+		uri
+	end
+	def page(page)
+		page
 	end
 end
 
@@ -17,41 +22,46 @@ class RuWikipediaOrg < DefaultSite
 	SCHEME = 'https'
 	HOST = 'ru.wikipedia.org'
 
-	class WikipediaPage_Rule
-		def process(page)
+	class WikipediaPage < DefaultPage
+		LINKS = []
+		COLLECT = ['ссылка на статью']
+		def page(page)
 			RemoveScript_Filter(page)
 			RemoveNoscript_Filter(page)
 		end
 	end
 
-	class MainPage_Rule < WikipediaPage_Rule
+	class MainPage < WikipediaPage
 		LINKS = ['/Заглавная_страница']
 	end
 
-	class Article_Rule
+	class Article
 		LINKS = ['/wiki/*']
-		def refirect(uri)
+		def link(uri)
 			"#{uri}?printable=yes"
 		end
 	end
 
-	class PrintableArticle_Rule < WikipediaPage_Rule
+	class PrintableArticle < WikipediaPage
 		LINKS = ['/wiki/*?printable=yes']
-		def process
+		COLLECT = ['ссылки на обсуждение'] + superclass::LINKS
+		def page(page)
 			super
 			RemoveNavigation_Filter(page)
 		end
 	end
 
-	class DiscussionPage_Rule < WikipediaPage_Rule
+	class DiscussionPage < WikipediaPage
 		LINKS = ['/wiki/*:Обсуждение']
+		COLLECT = ['ссылки на статью']
+		def page(page)
+		end
 	end
 
 	# фильтры
-	def RemoveNavigation_Filter
+	def RemoveNavigation_Filter(page)
 	end
 end
 
-RuWikipediaOrg.links
-
 w = RuWikipediaOrg.new
+#w.links
