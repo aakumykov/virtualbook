@@ -10,12 +10,6 @@ class DefaultSite
 end
 
 class DefaultPage
-	def link(uri)
-		uri
-	end
-	def page(page)
-		page
-	end
 end
 
 class RuWikipediaOrg < DefaultSite
@@ -23,8 +17,6 @@ class RuWikipediaOrg < DefaultSite
 	HOST = 'ru.wikipedia.org'
 
 	class WikipediaPage < DefaultPage
-		LINKS = []
-		COLLECT = ['ссылка на статью']
 		def page(page)
 			RemoveScript_Filter(page)
 			RemoveNoscript_Filter(page)
@@ -32,19 +24,31 @@ class RuWikipediaOrg < DefaultSite
 	end
 
 	class MainPage < WikipediaPage
-		LINKS = ['/Заглавная_страница']
+		def accept
+			['/Заглавная_страница']
+		end
 	end
 
+	class Article < DefaultPage
 	class Article
-		LINKS = ['/wiki/*']
+		def accept
+			['/wiki/*']
+		end
+		
 		def link(uri)
 			"#{uri}?printable=yes"
 		end
 	end
 
 	class PrintableArticle < WikipediaPage
-		LINKS = ['/wiki/*?printable=yes']
-		COLLECT = ['ссылки на обсуждение'] + superclass::LINKS
+		def accept
+			['/wiki/*?printable=yes'] + super
+		end
+		
+		def collect
+			['ссылки на обсуждение'] + super
+		end
+		
 		def page(page)
 			super
 			RemoveNavigation_Filter(page)
@@ -52,8 +56,14 @@ class RuWikipediaOrg < DefaultSite
 	end
 
 	class DiscussionPage < WikipediaPage
-		LINKS = ['/wiki/*:Обсуждение']
-		COLLECT = ['ссылки на статью']
+		def links
+			['/wiki/*:Обсуждение']
+		end
+		
+		def collect
+			['ссылки на статью']
+		end
+		
 		def page(page)
 		end
 	end
@@ -64,4 +74,4 @@ class RuWikipediaOrg < DefaultSite
 end
 
 w = RuWikipediaOrg.new
-#w.links
+w.rule_for('https://ru.wikipedia.org/wiki/Linux')
