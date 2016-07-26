@@ -1,5 +1,4 @@
 #coding: utf-8
-system 'clear'
 
 class Spider
 	attr_accessor :depth, :pages_per_node
