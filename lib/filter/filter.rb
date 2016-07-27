@@ -14,7 +14,7 @@ class Filter
 	end
 
 	def initialize
-		puts "создаю объект #{self.class}"
+		puts "создаётся объект #{self.class}"
 		@rules_dir = 'rules'
 	end
 
@@ -54,7 +54,7 @@ class Filter
 	end
 
 	def require_filter(file_name)
-		puts "закрытый метод #{self.class}.#{__method__}(#{file_name})"
+		puts " внутренний метод #{self.class}.#{__method__}(#{file_name})"
 
 		require File.realpath( 
 			File.join( 
