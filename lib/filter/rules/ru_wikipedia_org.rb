@@ -6,25 +6,27 @@ require File.join(
 )
 
 class RuWikipediaOrg < DefaultSite
-	SCHEME = 'https'
-	HOST = 'ru.wikipedia.org'
+	SCHEME = 'http[s]?'
+	HOST = 'ru\.wikipedia\.org'
 
-	class WikipediaPage
-		def page(page)
-			RemoveScript_Filter(page)
-			RemoveNoscript_Filter(page)
-		end
+	class WikipediaPage < DefaultPage
+		RemoveScript_Filter(page)
+		RemoveNoscript_Filter(page)
 	end
 
 	class MainPage < WikipediaPage
 		def accept
-			['/Заглавная_страница']
+			[
+				'/?', 
+				'/wiki/Заглавная_страница', 
+				'/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0'
+			]
 		end
 	end
 
-	class Article
+	class Article < WikipediaPage
 		def accept
-			['/wiki/*']
+			['/wiki/[^/:]+']
 		end
 		
 		def link(uri)
@@ -34,11 +36,11 @@ class RuWikipediaOrg < DefaultSite
 
 	class PrintableArticle < WikipediaPage
 		def accept
-			['/wiki/*?printable=yes'] + super
+			['/w/index.php\?title=FreeBSD&printable=yes']
 		end
 		
 		def collect
-			['ссылки на обсуждение'] + super
+			['ссылки на обсуждение']
 		end
 		
 		def page(page)
