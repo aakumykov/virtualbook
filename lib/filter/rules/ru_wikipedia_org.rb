@@ -9,7 +9,7 @@ class RuWikipediaOrg < DefaultSite
 	SCHEME = 'https'
 	HOST = 'ru.wikipedia.org'
 
-	class WikipediaPage < DefaultPage
+	class WikipediaPage
 		def page(page)
 			RemoveScript_Filter(page)
 			RemoveNoscript_Filter(page)
@@ -22,7 +22,6 @@ class RuWikipediaOrg < DefaultSite
 		end
 	end
 
-	#class Article < DefaultPage
 	class Article
 		def accept
 			['/wiki/*']

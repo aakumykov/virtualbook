@@ -33,6 +33,3 @@ class DefaultSite
 	def RemoveNoscript_Filter(page)
 	end
 end
-
-class DefaultPage
-end
