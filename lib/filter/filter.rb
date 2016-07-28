@@ -36,16 +36,27 @@ class Filter
 		uri = URI(uri)
 		
 		filter_name = uri.host.downcase.gsub('.','_')
+			puts " filter_name : #{filter_name}"
 		file_name = "#{filter_name}.rb"
-			#puts " file_name : #{file_name}"
+			puts " file_name : #{file_name}"
+		
+		#puts '@'*50
+		#require '/home/andrey/разработка/ruby/virtualbook/lib/filter/rules/ru_wikipedia_org.rb'
+		#puts '@'*50
 		
 		begin
-			require_filter file_name
+			puts " попытка загрузить '#{file_name}' "
+			require_filter(file_name)
 			object_name = filter_name.split('_').map{|p| p.capitalize}.join
-		rescue
+		rescue => e
+			puts " ------------ не удалось загрузить '#{file_name}' ------------ "
+			puts e.message
+			puts e.backtrace
+			puts " ------------------------------------------------------------ "
+			puts " попытка загрузить 'default.rb' "
 			require_filter 'default.rb'
 			object_name = 'DefaultSite'
-		end	
+		end
 		
 		filter = Object.const_get(object_name).new
 			puts "найден фильтр: #{filter}"
@@ -57,19 +68,25 @@ class Filter
 	end
 
 	def require_filter(file_name)
-		puts " внутренний метод #{self.class}.#{__method__}(#{file_name})"
+		puts " загружаю фильтр '#{file_name}' "
 
-		require File.realpath( 
-			File.join( 
-				File.dirname(File.realpath(__FILE__)), 
+		file_path = File.realpath(
+			File.join(
+				File.dirname(File.realpath(__FILE__)),
 				"#{@rules_dir}",
-				file_name 
-			) 
-		) 
+				file_name
+			)
+		)
+		
+			puts "  путь к файлу: #{file_path}"
+		
+		require file_path
 	end
 end
 
 new_link = Filter.link('https://ru.wikipedia.org/wiki/Linux')
 puts "результат: #{new_link}"
 puts '~'*90
-Filter.page('https://ru.wikipedia.org/wiki/Linux','the page')
+puts '~'*90
+new_page = Filter.page('https://ru.wikipedia.org/wiki/Linux','the page')
+puts "результат: #{new_page.size}"

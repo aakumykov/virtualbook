@@ -1,17 +1,16 @@
 #coding: utf-8
 
-require File.join(
-	File.dirname(__FILE__),
-	'default.rb'
-)
+require File.join(File.dirname(__FILE__),'default.rb')
 
 class RuWikipediaOrg < DefaultSite
 	SCHEME = 'http[s]?'
 	HOST = 'ru\.wikipedia\.org'
 
 	class WikipediaPage < DefaultPage
-		RemoveScript_Filter(page)
-		RemoveNoscript_Filter(page)
+		def page(page)
+			RemoveScript_Filter(page)
+			RemoveNoscript_Filter(page)
+		end
 	end
 
 	class MainPage < WikipediaPage
@@ -30,7 +29,11 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def link(uri)
-			"#{uri}?printable=yes"
+			if uri_parts = uri.match('^http[s]?://ru\.wikipedia\.org/wiki/(?<title>[^/:]+)$') then
+				"https://ru.wikipedia.org/w/index.php?title=#{uri_parts[:title]}&printable=yes"
+			else
+				uri
+			end
 		end
 	end
 

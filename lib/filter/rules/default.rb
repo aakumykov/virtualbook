@@ -52,7 +52,7 @@ class DefaultSite
 	private
 
 	def index_rules
-		puts " внутренний метод #{self.class}.#{__method__}"
+		#puts " внутренний метод #{self.class}.#{__method__}"
 
 		index = {}
 		self.class.constants.each do |name|
