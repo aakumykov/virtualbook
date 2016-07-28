@@ -1,7 +1,9 @@
 #coding: utf-8
 
 class Spider
-	attr_accessor :depth, :pages_per_node
+	attr_accessor :depth, :pages_per_node, :threads
+
+	@@source = []
 
 	def self.create(&block)
 		puts "#{self}.#{__method__}(#{block})"
@@ -11,22 +13,44 @@ class Spider
 	def initialize(&block)
 		puts "#{self.class}.#{__method__}(#{block})"
 		instance_eval(&block) if block_given?
+
+		#@source = []
 	end
 
-	def add_source(src)
-		puts "#{self.class}.#{__method__}(#{src})"
-	end
-
-	def download(arg=nil)
-		puts "#{self.class}.#{__method__}(#{arg})"
+	def add_source(uri)
+		puts "#{self.class}.#{__method__}(#{uri})"
+		@@source << uri
 	end
 
 	def before_load=(arg)
-		@@before_load = arg
+		@before_load = arg
 	end
 
 	def after_load=(arg)
-		@@after_load = arg
+		@after_load = arg
+	end
+
+	def download(uri)
+		puts "#{self.class}.#{__method__}(#{arg})"
+
+		arg = [arg] || @@source
+
+		threads = []
+		(@threads || 1).times do |t|
+			threads << Thread.new do
+				uri = @before_load.call(uri)
+				page = load(uri)
+				page = @after_load.call(uri,page)
+			end
+		end
+
+		threads.each &:join
+	end
+
+	private
+
+	def load(arg)
+		puts "#{self.class}.#{__method__}(#{arg})"
 	end
 end
 
@@ -38,6 +62,8 @@ Spider.create do |sp|
 	
 	sp.depth = 2
 	sp.pages_per_node = 3
+
+	sp.threads = 3
 	
 	sp.before_load = 'Filter.link'
 	sp.after_load = 'Filter.page'
