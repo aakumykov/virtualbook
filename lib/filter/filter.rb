@@ -1,6 +1,7 @@
 #coding: utf-8
 
 require 'uri'
+require 'nokogiri'
 
 class Filter
 	def self.link(*arg)
@@ -24,8 +25,15 @@ class Filter
 	end
 
 	def page(uri,page)
-		puts "метод объекта #{self.class}.#{__method__}"
-		find_filter(uri).page(page)
+		puts "метод объекта #{self.class}.#{__method__}(uri: #{uri}, page: #{page.class})"
+		
+		page = Nokogiri::XML(page) { |config|
+			config.nonet
+			config.noerror
+			config.noent
+		}
+		
+		find_filter(uri).page(page).to_xhtml
 	end
 
 	private

@@ -49,12 +49,21 @@ class DefaultSite
 		def link(uri); uri; end
 		def page(page); page; end
 		
-		def remove_script_filter(page)
-			page
+		def remove_script_filter(dom)
+			remove_tag(dom, 'script')
 		end
 
-		def remove_noscript_filter(page)
-			page
+		def remove_noscript_filter(dom)
+			remove_tag(dom, 'noscript')
+		end
+		
+		private
+		
+		def remove_tag(dom, tag_name)
+			dom.search("//#{tag_name}").each { |s|
+				s.remove
+			}
+			return dom
 		end
 	end
 
