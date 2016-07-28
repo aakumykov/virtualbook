@@ -1,7 +1,7 @@
 #coding: utf-8
 
 class Spider
-	attr_accessor :depth, :pages_per_node, :before_load, :after_load
+	attr_accessor :depth, :pages_per_node
 
 	def self.create(&block)
 		puts "#{self}.#{__method__}(#{block})"
@@ -19,6 +19,14 @@ class Spider
 
 	def download(arg=nil)
 		puts "#{self.class}.#{__method__}(#{arg})"
+	end
+
+	def before_load=(arg)
+		@@before_load = arg
+	end
+
+	def after_load=(arg)
+		@@after_load = arg
 	end
 end
 
