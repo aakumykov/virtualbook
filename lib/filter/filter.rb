@@ -25,7 +25,7 @@ class Filter
 
 	def page(uri,page)
 		puts "метод объекта #{self.class}.#{__method__}"
-		find_filter(uri).page(uri,page)
+		find_filter(uri).page(page)
 	end
 
 	private
@@ -49,7 +49,7 @@ class Filter
 			require_filter(file_name)
 			object_name = filter_name.split('_').map{|p| p.capitalize}.join
 		rescue => e
-			puts " ------------ не удалось загрузить '#{file_name}' ------------ "
+			puts " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
 			puts e.message
 			puts e.backtrace
 			puts " ------------------------------------------------------------ "
@@ -88,5 +88,5 @@ new_link = Filter.link('https://ru.wikipedia.org/wiki/Linux')
 puts "результат: #{new_link}"
 puts '~'*90
 puts '~'*90
-new_page = Filter.page('https://ru.wikipedia.org/wiki/Linux','the page')
+new_page = Filter.page('https://ru.wikipedia.org/wiki/Linux', 'the page')
 puts "результат: #{new_page.size}"

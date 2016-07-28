@@ -6,11 +6,12 @@ class DefaultSite
 
 	def find_rule(uri)
 		puts "#{self.class}.#{__method__}(#{uri})"
+		
 		rule = @rule_index.keep_if { |pattern,rule_name|
 			#puts "#{pattern}, #{uri}"
 			uri.to_s.match pattern
 		}
-		#puts "rule: #{rule}"
+		
 		return rule.first.last
 	end
 
@@ -46,10 +47,26 @@ class DefaultSite
 		def accept; ['.*']; end
 		def collect; []; end
 		def link(uri); uri; end
-		def page(uri,page); page; end
+		def page(page); page; end
+		
+		def remove_script_filter(page)
+			page
+		end
+
+		def remove_noscript_filter(page)
+			page
+		end
 	end
 
 	private
+
+	def process_link(uri)
+		puts "#{self.class}.#{__method__}(#{uri})"
+	end
+
+	def process_page(uri,page)
+		puts "#{self.class}.#{__method__}(#{uri},#{page.class})"
+	end
 
 	def index_rules
 		#puts " внутренний метод #{self.class}.#{__method__}"
@@ -75,27 +92,7 @@ class DefaultSite
 		pattern = "^#{scheme_regexp}://#{(host_regexp + urlpath_regexp).gsub(/\/+/,'/')}$"
 		pattern.gsub!(/^\^+/,'^')
 		pattern.gsub!(/\$+$/,'$')
-		
-		#puts "#{pattern}"
-		#puts "#{Regexp.new(pattern)}"
-		#puts '-'*30
-
 		Regexp.new pattern
-	end
-
-	def process_link(uri)
-		puts "#{self.class}.#{__method__}(#{uri})"
-	end
-
-	def process_page(uri,page)
-		puts "#{self.class}.#{__method__}(#{uri},#{page.class})"
-	end
-
-	# фильтры
-	def RemoveScript_Filter(page)
-	end
-
-	def RemoveNoscript_Filter(page)
 	end
 end
 

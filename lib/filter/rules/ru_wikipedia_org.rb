@@ -8,8 +8,9 @@ class RuWikipediaOrg < DefaultSite
 
 	class WikipediaPage < DefaultPage
 		def page(page)
-			RemoveScript_Filter(page)
-			RemoveNoscript_Filter(page)
+			puts " #{self.class}.#{__method__}"
+			page = remove_script_filter(page)
+			page = remove_noscript_filter(page)
 		end
 	end
 
@@ -48,7 +49,7 @@ class RuWikipediaOrg < DefaultSite
 		
 		def page(page)
 			super
-			RemoveNavigation_Filter(page)
+			remove_navigation_filter(page)
 		end
 	end
 
@@ -66,6 +67,6 @@ class RuWikipediaOrg < DefaultSite
 	end
 
 	# фильтры
-	def RemoveNavigation_Filter(page)
+	def remove_navigation_filter(page)
 	end
 end
