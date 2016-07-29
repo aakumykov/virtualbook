@@ -6,9 +6,6 @@ require_relative '../msg/msg.rb'
 class Spider
 	include Msg
 	MSG_COLOR = :green
-	
-	Msg::debug self.class
-	exit
 
 	attr_accessor :depth, :pages_per_node, :threads
 
@@ -69,7 +66,7 @@ puts "#{'~'*15} вызов с блоком #{'~'*15}"
 
 Spider.create do |sp|
 	sp.add_source('http://opennet.ru')
-	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
+	#sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
 	
 	sp.depth = 2
 	sp.pages_per_node = 3

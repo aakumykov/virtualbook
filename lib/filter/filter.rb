@@ -9,12 +9,12 @@ class Filter
 	MSG_COLOR = :blue
 
 	def self.link(*arg)
-		puts "метод класса #{self}.#{__method__}(#{arg})"
+		self.debug_msg "метод класса #{self}.#{__method__}(#{arg})"
 		self.new.link(*arg)
 	end
 
 	def self.page(*arg)
-		puts "метод класса #{self}.#{__method__}(#{arg})"
+		self.debug_msg "метод класса #{self}.#{__method__}(#{arg})"
 		self.new.page(*arg)
 	end
 

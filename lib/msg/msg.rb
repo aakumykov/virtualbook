@@ -3,29 +3,34 @@
 require 'colorize'
 
 module Msg
+	DEFAULT_COLOR = :white
 
-	def self.included(arg)
-		
+	def self.included base
+		base.extend self
 	end
 
-	def self.debug(msg)
-		puts "self: #{self}"
-		puts "self.class: #{self.class}"
-		puts "ОТЛАДКА: #{msg}"
-		puts "constants: #{self.class.constants.include? 'MSG_COLOR'}"
+	def const_missing(name)
+		case name
+		when :MSG_COLOR
+			DEFAULT_COLOR
+		else
+			nil
+		end
 	end
-	#~ def debug_msg(*arg)
-		#~ colored_message(*arg)
-	#~ end
-#~ 
-	#~ def info_msg(*arg)
-		#~ colored_message(*arg)
-	#~ end
-#~ 
-	#~ private
-#~ 
-	#~ def colored_message(*arg)
-		#~ color = (self.class::MSG_COLOR || :black).to_sym
-		#~ data = arg.each { |a| puts a.to_s.send(color) }
-	#~ end
+
+	def debug_msg msg
+		color msg
+	end
+
+	def info_msg msg
+		color msg
+	end
+
+	private
+
+		def color(msg)
+			color = self.is_a?(Module) ? self::MSG_COLOR : self.class::MSG_COLOR
+			
+			puts "#{msg}".send(color.to_sym)
+		end
 end
