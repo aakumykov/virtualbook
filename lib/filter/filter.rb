@@ -92,9 +92,9 @@ class Filter
 	end
 end
 
-new_link = Filter.link('https://ru.wikipedia.org/wiki/Linux')
-puts "результат: #{new_link}"
-puts '~'*90
-puts '~'*90
-new_page = Filter.page('https://ru.wikipedia.org/wiki/Linux', 'the page')
-puts "результат: #{new_page.size}"
+# new_link = Filter.link('https://ru.wikipedia.org/wiki/Linux')
+# puts "результат: #{new_link}"
+# puts '~'*90
+# puts '~'*90
+# new_page = Filter.page('https://ru.wikipedia.org/wiki/Linux', 'the page')
+# puts "результат: #{new_page.size}"
