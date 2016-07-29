@@ -45,8 +45,13 @@ class Spider
 			threads << Thread.new do
 				if uri = src.pop then
 					@before_load and uri = @before_load.call(uri)
+						debug_msg "фильтрованный uri: #{uri}"
+					
 					page = load(uri)
+						debug_msg "загружена страница: #{page.class}, размер: #{page.to_s.size} байт"
+					
 					@after_load and page = @after_load.call(uri,page)
+						puts "фильтрованная страница: #{page.class}, размер: #{page.size} байт"
 				end
 			end
 		end
@@ -73,8 +78,15 @@ Spider.create do |sp|
 
 	sp.threads = 3
 	
-	sp.before_load = lambda { |uri| Filter.link(uri) }
-	#sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
+	sp.before_load = lambda { |uri| 
+		puts 'предобработка'
+		Filter.link(uri) 
+	}
+
+	sp.after_load = lambda { |uri,page| 
+		puts 'постобработка'
+		Filter.page(uri,page) 
+	}
 end.download
 
 

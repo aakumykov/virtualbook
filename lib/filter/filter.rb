@@ -61,11 +61,11 @@ class Filter
 			require_filter(file_name)
 			object_name = filter_name.split('_').map{|p| p.capitalize}.join
 		rescue => e
-			debug_msg " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
-			debug_msg e.message
-			debug_msg e.backtrace
-			debug_msg " ------------------------------------------------------------ "
-			debug_msg " попытка загрузить 'default.rb' "
+			# debug_msg " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
+			# debug_msg e.message
+			# debug_msg e.backtrace
+			# debug_msg " ------------------------------------------------------------ "
+			# debug_msg " попытка загрузить 'default.rb' "
 			require_filter 'default.rb'
 			object_name = 'DefaultSite'
 		end
@@ -90,7 +90,7 @@ class Filter
 			)
 		)
 		
-			debug_msg "  путь к файлу: #{file_path}"
+			#debug_msg "  путь к файлу: #{file_path}"
 		
 		require file_path
 	end
