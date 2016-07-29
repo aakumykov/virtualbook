@@ -2,8 +2,12 @@
 
 require 'uri'
 require 'nokogiri'
+require_relative '../msg/msg.rb'
 
 class Filter
+	include Msg
+	MSG_COLOR = :blue
+
 	def self.link(*arg)
 		puts "метод класса #{self}.#{__method__}(#{arg})"
 		self.new.link(*arg)
@@ -15,17 +19,17 @@ class Filter
 	end
 
 	def initialize
-		puts "создаётся объект #{self.class}"
+		debug_msg "создаётся объект #{self.class}"
 		@rules_dir = 'rules'
 	end
 
 	def link(uri)
-		puts "метод объекта #{self.class}.#{__method__}"
+		debug_msg "метод объекта #{self.class}.#{__method__}"
 		find_filter(uri).link(uri)
 	end
 
 	def page(uri,page)
-		puts "метод объекта #{self.class}.#{__method__}(uri: #{uri}, page: #{page.class})"
+		debug_msg "метод объекта #{self.class}.#{__method__}(uri: #{uri}, page: #{page.class})"
 		
 		page = Nokogiri::XML(page) { |config|
 			config.nonet
@@ -39,44 +43,44 @@ class Filter
 	private
 
 	def find_filter(uri)
-		puts "ищу фильтр для '#{uri}'"
+		debug_msg "ищу фильтр для '#{uri}'"
 
 		uri = URI(uri)
 		
 		filter_name = uri.host.downcase.gsub('.','_')
-			puts " filter_name : #{filter_name}"
+			#debug_msg " filter_name : #{filter_name}"
 		file_name = "#{filter_name}.rb"
-			puts " file_name : #{file_name}"
+			debug_msg " file_name : #{file_name}"
 		
-		#puts '@'*50
+		#debug_msg '@'*50
 		#require '/home/andrey/разработка/ruby/virtualbook/lib/filter/rules/ru_wikipedia_org.rb'
-		#puts '@'*50
+		#debug_msg '@'*50
 		
 		begin
-			puts " попытка загрузить '#{file_name}' "
+			#debug_msg " попытка загрузить '#{file_name}' "
 			require_filter(file_name)
 			object_name = filter_name.split('_').map{|p| p.capitalize}.join
 		rescue => e
-			puts " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
-			puts e.message
-			puts e.backtrace
-			puts " ------------------------------------------------------------ "
-			puts " попытка загрузить 'default.rb' "
+			debug_msg " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
+			debug_msg e.message
+			debug_msg e.backtrace
+			debug_msg " ------------------------------------------------------------ "
+			debug_msg " попытка загрузить 'default.rb' "
 			require_filter 'default.rb'
 			object_name = 'DefaultSite'
 		end
 		
 		filter = Object.const_get(object_name).new
-			puts "найден фильтр: #{filter}"
+			debug_msg "найден фильтр: #{filter}"
 
 		rule = filter.find_rule(uri)
-			puts "найдено правило: #{rule}"
+			debug_msg "найдено правило: #{rule}"
 
 		return rule.new
 	end
 
 	def require_filter(file_name)
-		puts " загружаю фильтр '#{file_name}' "
+		debug_msg " загружаю фильтр '#{file_name}' "
 
 		file_path = File.realpath(
 			File.join(
@@ -86,7 +90,7 @@ class Filter
 			)
 		)
 		
-			puts "  путь к файлу: #{file_path}"
+			debug_msg "  путь к файлу: #{file_path}"
 		
 		require file_path
 	end

@@ -6,13 +6,16 @@ require_relative '../msg/msg.rb'
 class Spider
 	include Msg
 	MSG_COLOR = :green
+	
+	Msg::debug self.class
+	exit
 
 	attr_accessor :depth, :pages_per_node, :threads
 
 	@@source = []
 
 	def self.create(&block)
-		puts "#{self}.#{__method__}(#{block})"
+		self.debug_msg "#{self}.#{__method__}(#{block})"
 		self.new(&block)
 	end
 
@@ -44,9 +47,9 @@ class Spider
 		@threads.times do |t|
 			threads << Thread.new do
 				if uri = src.pop then
-					#uri = @before_load.call(uri)
+					@before_load and uri = @before_load.call(uri)
 					page = load(uri)
-					#page = @after_load.call(uri,page)
+					@after_load and page = @after_load.call(uri,page)
 				end
 			end
 		end
@@ -74,7 +77,7 @@ Spider.create do |sp|
 	sp.threads = 3
 	
 	sp.before_load = lambda { |uri| Filter.link(uri) }
-	sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
+	#sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
 end.download
 
 

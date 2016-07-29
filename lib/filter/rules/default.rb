@@ -1,14 +1,19 @@
 #coding: utf-8
 
+require_relative '../../msg/msg.rb'
+
 class DefaultSite
+	include Msg
+	MSG_COLOR = :cyan
+
 	SCHEME = '[^:]+'
 	HOST = '[-a-z.]+'
 
 	def find_rule(uri)
-		puts "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self.class}.#{__method__}(#{uri})"
 		
 		rule = @rule_index.keep_if { |pattern,rule_name|
-			#puts "#{pattern}, #{uri}"
+			#debug_msg "#{pattern}, #{uri}"
 			uri.to_s.match pattern
 		}
 		
@@ -25,12 +30,12 @@ class DefaultSite
 
 
 	def initialize
-		puts "создаётся объект #{self.class}"
+		debug_msg "создаётся объект #{self.class}"
 		index_rules
 	end
 
 	def process(*arg)
-		puts "#{self.class}.#{__method__}(#{arg})"
+		debug_msg "#{self.class}.#{__method__}(#{arg})"
 
 		case arg.size
 		when 1
@@ -70,15 +75,15 @@ class DefaultSite
 	private
 
 	def process_link(uri)
-		puts "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self.class}.#{__method__}(#{uri})"
 	end
 
 	def process_page(uri,page)
-		puts "#{self.class}.#{__method__}(#{uri},#{page.class})"
+		debug_msg "#{self.class}.#{__method__}(#{uri},#{page.class})"
 	end
 
 	def index_rules
-		#puts " внутренний метод #{self.class}.#{__method__}"
+		#debug_msg " внутренний метод #{self.class}.#{__method__}"
 
 		index = {}
 		self.class.constants.each do |name|
@@ -92,7 +97,7 @@ class DefaultSite
 
 		@rule_index = index.sort_by { |pattern,_| pattern.to_s.length }.reverse.to_h
 
-		#puts '-'*40; @rule_index.each_pair{|k,v| puts "#{k} => #{v}"}; puts '-'*40
+		#debug_msg '-'*40; @rule_index.each_pair{|k,v| debug_msg "#{k} => #{v}"}; debug_msg '-'*40
 		
 		#@rule_index
 	end
