@@ -6,7 +6,7 @@ require_relative '../msg/msg.rb'
 
 class Filter
 	include Msg
-	MSG_COLOR = :blue
+	COLOR = :blue
 
 	def self.link(*arg)
 		self.debug_msg "метод класса #{self}.#{__method__}(#{arg})"

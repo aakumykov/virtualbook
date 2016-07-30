@@ -5,7 +5,7 @@ require_relative '../msg/msg.rb'
 
 class Spider
 	include Msg
-	MSG_COLOR = :green
+	COLOR = :green
 
 	attr_accessor :depth, :pages_per_node, :threads
 
@@ -51,7 +51,7 @@ class Spider
 						debug_msg "загружена страница: #{page.class}, размер: #{page.to_s.size} байт"
 					
 					@after_load and page = @after_load.call(uri,page)
-						puts "фильтрованная страница: #{page.class}, размер: #{page.size} байт"
+						debug_msg "фильтрованная страница: #{page.class}, размер: #{page.size} байт"
 				end
 			end
 		end
@@ -67,7 +67,7 @@ class Spider
 end
 
 
-puts "#{'~'*15} вызов с блоком #{'~'*15}"
+Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
 Spider.create do |sp|
 	sp.add_source('http://opennet.ru')
@@ -79,18 +79,18 @@ Spider.create do |sp|
 	sp.threads = 3
 	
 	sp.before_load = lambda { |uri| 
-		puts 'предобработка'
+		sp.info 'предобработка'
 		Filter.link(uri) 
 	}
 
 	sp.after_load = lambda { |uri,page| 
-		puts 'постобработка'
+		sp.info 'постобработка'
 		Filter.page(uri,page) 
 	}
 end.download
 
 
-# puts "#{'~'*15} вызов объектом #{'~'*15}"
+#Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
 
 # sp = Spider.new
 # sp.add_source 'http://linux.org.ru'
@@ -102,7 +102,7 @@ end.download
 # data = sp.download
 
 
-# puts "#{'~'*15} вызов объектом 2 #{'~'*15}"
+#Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
 
 # sp2 = Spider.new
 # sp2.depth = 1

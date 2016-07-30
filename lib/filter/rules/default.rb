@@ -4,7 +4,7 @@ require_relative '../../msg/msg.rb'
 
 class DefaultSite
 	include Msg
-	MSG_COLOR = :cyan
+	COLOR = :cyan
 
 	SCHEME = '[^:]+'
 	HOST = '[-a-z.]+'

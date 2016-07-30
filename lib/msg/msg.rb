@@ -3,7 +3,18 @@
 require 'colorize'
 
 module Msg
-	DEFAULT_COLOR = :white
+	COLOR = :black
+
+	def debug_msg arg
+		colorize arg
+	end
+
+	def info_msg arg
+		colorize arg
+	end
+
+	# служебное
+	self.extend self
 
 	def self.included base
 		base.extend self
@@ -11,26 +22,38 @@ module Msg
 
 	def const_missing(name)
 		case name
-		when :MSG_COLOR
-			DEFAULT_COLOR
+		when :COLOR
+			COLOR
 		else
 			nil
 		end
 	end
 
-	def debug_msg msg
-		color msg
-	end
-
-	def info_msg msg
-		color msg
+	def method_missing name, *arg
+		#puts "нет метода '#{name}' (#{arg})"
+		if [:info,:debug,:error,:warning,:alert].include? name.to_sym then
+			new_name = "#{name}_msg".to_sym
+			self.send(new_name,*arg)
+		end
 	end
 
 	private
 
-		def color(msg)
-			color = self.is_a?(Module) ? self::MSG_COLOR : self.class::MSG_COLOR
-			
-			puts "#{msg}".send(color.to_sym)
+	def colorize arg
+		#puts "#{__method__}(), self: #{self}, self.class: #{self.class}"
+
+		case self.class.to_s.to_sym
+		when :Module
+			#puts "модуль"
+			color = COLOR
+		when :Class
+			#puts "статика"
+			color = self::COLOR
+		else
+			#puts "динамика"
+			color = self.class::COLOR
 		end
+
+		puts arg.to_s.send(color.to_sym)
+	end
 end
