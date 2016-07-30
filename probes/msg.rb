@@ -70,15 +70,15 @@ class Foo
 	end
 end
 
-Msg.info_msg '123'
-Foo.new.info_msg '345'
-Foo.info_msg '567'
-puts Msg::COLOR
-puts Foo::COLOR
-Foo.new.work
+# Msg.info_msg '123'
+# Foo.new.info_msg '345'
+# Foo.info_msg '567'
+# puts Msg::COLOR
+# puts Foo::COLOR
+# Foo.new.work
 
-Foo.info "Foo.info, отзовись!"
-Foo.new.debug "Отладка (Foo.debug)"
+# Foo.info "Foo.info, отзовись!"
+# Foo.new.debug "Отладка (Foo.debug)"
 
-Msg.info "наушники костной проводимости"
-Msg.debug "кости будут проводить звукъ"
+# Msg.info "наушники костной проводимости"
+# Msg.debug "кости будут проводить звукъ"
