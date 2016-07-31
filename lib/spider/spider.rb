@@ -48,14 +48,18 @@ class Spider
 		@threads.times do |t|
 			threads << Thread.new do
 				if uri = src.pop then
-					@before_load and uri = @before_load.call(uri)
-						debug_msg "фильтрованный uri: #{uri}"
+					if @before_load then
+						uri = @before_load.call(uri)
+						debug_msg "ФИЛЬТРОВАННЫЙ uri: #{uri}"
+					end
 					
 					page = load page: uri
 						debug_msg "загружена страница: #{page.class}, размер: #{page.to_s.size} байт"
 					
-					@after_load and page = @after_load.call(uri,page)
-						debug_msg "фильтрованная страница: #{page.class}, размер: #{page.to_s.size} байт"
+					if @after_load then
+						page = @after_load.call(uri,page)
+						debug_msg "ФИЛЬТРОВАННАЯ страница: #{page.class}, размер: #{page.to_s.size} байт"
+					end
 				end
 			end
 		end
@@ -151,8 +155,8 @@ end
 Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
 Spider.create do |sp|
-	sp.add_source('http://opennet.ru')
-	#sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
+	#sp.add_source('http://opennet.ru')
+	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
 	
 	sp.depth = 2
 	sp.pages_per_node = 3
@@ -160,12 +164,12 @@ Spider.create do |sp|
 	sp.threads = 3
 	
 	sp.before_load = lambda { |uri| 
-		sp.info 'предобработка'
+		sp.info '==== предобработка ===='
 		Filter.link(uri) 
 	}
 
 	sp.after_load = lambda { |uri,page| 
-		sp.info 'постобработка'
+		sp.info '==== постобработка ===='
 		Filter.page(uri,page) 
 	}
 end.download

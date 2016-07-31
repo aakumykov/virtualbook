@@ -14,7 +14,7 @@ class Filter
 	end
 
 	def self.page(*arg)
-		self.debug_msg "метод класса #{self}.#{__method__}(#{arg})"
+		self.debug_msg "метод класса #{self}.#{__method__}(#{(arg.map &:class).join', '})"
 		self.new.page(*arg)
 	end
 
@@ -24,12 +24,12 @@ class Filter
 	end
 
 	def link(uri)
-		debug_msg "метод объекта #{self.class}.#{__method__}"
+		debug_msg "#{self}.#{__method__}"
 		find_filter(uri).link(uri)
 	end
 
 	def page(uri,page)
-		debug_msg "метод объекта #{self.class}.#{__method__}(uri: #{uri}, page: #{page.class})"
+		debug_msg "#{self}.#{__method__}(uri: #{uri}, page: #{page.class})"
 		
 		page = Nokogiri::XML(page) { |config|
 			config.nonet
@@ -50,7 +50,7 @@ class Filter
 		filter_name = uri.host.downcase.gsub('.','_')
 			#debug_msg " filter_name : #{filter_name}"
 		file_name = "#{filter_name}.rb"
-			debug_msg " file_name : #{file_name}"
+			#debug_msg " file_name: #{file_name}"
 		
 		#debug_msg '@'*50
 		#require '/home/andrey/разработка/ruby/virtualbook/lib/filter/rules/ru_wikipedia_org.rb'

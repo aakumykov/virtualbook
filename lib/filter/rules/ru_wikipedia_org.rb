@@ -7,11 +7,19 @@ class RuWikipediaOrg < DefaultSite
 	HOST = 'ru\.wikipedia\.org'
 
 	class WikipediaPage < DefaultPage
-		def page(page)
+		def page(dom)
 			puts " #{self.class}.#{__method__}"
-			page = remove_script_filter(page)
-			page = remove_noscript_filter(page)
+			dom = remove_script_filter(dom)
+			dom = remove_noscript_filter(dom)
+			return dom
 		end
+		
+		private
+		
+		def remove_navigation(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
+			return dom
+		end 
 	end
 
 	class MainPage < WikipediaPage
@@ -21,6 +29,10 @@ class RuWikipediaOrg < DefaultSite
 				'/wiki/Заглавная_страница', 
 				'/wiki/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0'
 			]
+		end
+		
+		def page(dom)
+			super
 		end
 	end
 
@@ -48,8 +60,9 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def page(page)
+			puts "СТРАНИЧНОЕ ПРАВИЛО: #{self}, #{self.class}"
 			super
-			remove_navigation_filter(page)
+			remove_navigation(page)
 		end
 	end
 
@@ -63,10 +76,7 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def page(page)
+			super
 		end
-	end
-
-	# фильтры
-	def remove_navigation_filter(page)
 	end
 end

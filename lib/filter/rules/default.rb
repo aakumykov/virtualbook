@@ -4,13 +4,14 @@ require_relative '../../msg/msg.rb'
 
 class DefaultSite
 	include Msg
+
 	COLOR = :cyan
 
 	SCHEME = '[^:]+'
 	HOST = '[-a-z.]+'
 
 	def find_rule(uri)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 		
 		rule = @rule_index.keep_if { |pattern,rule_name|
 			#debug_msg "#{pattern}, #{uri}"
@@ -49,6 +50,10 @@ class DefaultSite
 	end
 
 	class DefaultPage
+		include Msg
+		
+		COLOR = :yellow
+	
 		def accept; ['.*']; end
 		def collect; []; end
 		def link(uri); uri; end
