@@ -8,9 +8,14 @@ class RuWikipediaOrg < DefaultSite
 
 	class WikipediaPage < DefaultPage
 		def page(dom)
-			debug_msg " #{self.class}.#{__method__}"
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
+			
 			dom = remove_script(dom)
+				debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
+			
 			dom = remove_noscript(dom)
+				debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
+			
 			return dom
 		end
 		
@@ -51,11 +56,12 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def page(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
 			super
 		end
 	end
 
-	class Article < WikipediaPage
+	class ArticlePage < WikipediaPage
 		def accept
 			['/wiki/[^/:]+']
 		end
@@ -69,7 +75,7 @@ class RuWikipediaOrg < DefaultSite
 		end
 	end
 
-	class PrintableArticle < WikipediaPage
+	class PrintableArticlePage < WikipediaPage
 		def accept
 			['/w/index.php\?title=FreeBSD&printable=yes']
 		end
@@ -78,9 +84,15 @@ class RuWikipediaOrg < DefaultSite
 			['ссылки на обсуждение']
 		end
 		
-		def page(page)
-			super
-			remove_navigation(page)
+		def page(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class}, #{dom.to_s.size} байт)"
+			
+			dom = super(dom)
+				debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
+			
+			dom = remove_navigation(dom)
+			
+			return dom
 		end
 	end
 
@@ -94,6 +106,7 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def page(page)
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
 			super
 		end
 	end

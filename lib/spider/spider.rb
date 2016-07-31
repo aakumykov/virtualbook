@@ -59,13 +59,15 @@ class Spider
 					page = recode_page(data[:page], data[:headers])
 						debug_msg " страница перекодирована, размер #{data[:page].size} байт"
 					
-					page_dom = html2dom(page)
-						debug_msg " страница преобразована в #{page_dom.class}"
+					page = html2dom(page)
+						debug_msg " страница преобразована в #{page.class}"
 					
 					if @after_load then
 						page = @after_load.call(uri,page)
 						debug_msg " ФИЛЬТРОВАННАЯ страница: #{page.class}, размер: #{page.to_s.size} байт"
 					end
+					
+					File.write "result.html", page
 				end
 			end
 		end
@@ -225,6 +227,7 @@ Spider.create do |sp|
 
 	sp.after_load = lambda { |uri,page| 
 		sp.info '==== постобработка ===='
+		sp.debug "размер страницы до: #{page.to_s.size}"
 		Filter.page(uri,page) 
 	}
 end.load
