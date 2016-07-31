@@ -156,15 +156,15 @@ class Spider
 
 
 		def recode_page(page, headers, target_charset='UTF-8')
-			debug_msg("#{self.class}.#{__method__}(#{page.size} байт, #{headers.class})")
+			debug_msg("#{self.class}.#{__method__}(#{page.size} байт, #{headers.keys})")
 			
-			page_charset = nil
-			headers_charset = nil
-			
-			pattern_big=Regexp.new(/<\s*meta\s+http-equiv\s*=\s*['"]\s*content-type\s*['"]\s*content\s*=\s*['"]\s*text\s*\/\s*html\s*;\s+charset\s*=\s*(?<charset>[a-z0-9-]+)\s*['"]\s*\/?\s*>/i)
-			pattern_small=Regexp.new(/<\s*meta\s+charset\s*=\s*['"]?\s*(?<charset>[a-z0-9-]+)\s*['"]?\s*\/?\s*>/i)
+			charset_pattern_big=Regexp.new(/<\s*meta\s+http-equiv\s*=\s*['"]\s*content-type\s*['"]\s*content\s*=\s*['"]\s*text\s*\/\s*html\s*;\s+charset\s*=\s*(?<charset>[a-z0-9-]+)\s*['"]\s*\/?\s*>/i)
+			charset_pattern_small=Regexp.new(/<\s*meta\s+charset\s*=\s*['"]?\s*(?<charset>[a-z0-9-]+)\s*['"]?\s*\/?\s*>/i)
 
-			page_charset = page.match(pattern_big) || page.match(pattern_small)
+			charset_tag_big = "<title><meta http-equiv='content-type' content='text/html; charset=#{target_charset}'>"
+			charset_tag_small = "<meta charset='#{target_charset}' />"
+
+			page_charset = page.match(charset_pattern_big) || page.match(charset_pattern_small)
 			page_charset = page_charset[:charset] if not page_charset.nil?
 			
 			headers.each_pair { |k,v|
@@ -174,10 +174,13 @@ class Spider
 				end
 			}
 			
-			page_charset = headers_charset if page_charset.nil?
-			page_charset = 'ISO-8859-1' if headers_charset.nil?
+			#page_charset = headers_charset if page_charset.nil?
+			page_charset ||= headers_charset if page_charset.nil?
+			#page_charset = 'ISO-8859-1' if headers_charset.nil?
+			page_charset ||= 'ISO-8859-1'
 
-			#puts "page_charset: #{page_charset}"
+				debug_msg " кодировка со страницы: #{page_charset}"
+				debug_msg " кодировка из заголовков: #{headers_charset}"
 
 			page = page.encode(
 				target_charset, 
@@ -185,15 +188,22 @@ class Spider
 				{ :replace => '_', :invalid => :replace, :undef => :replace }
 			)
 			
-			page = page.gsub(
-				pattern_big,
-				"<meta http-equiv='content-type' content='text/html; charset=#{page_charset}'>"
-			)
-			
-			page = page.gsub(
-				pattern_small,
-				"<meta charset='#{page_charset}' />"
-			)
+			if page.match(charset_pattern_big) then
+				page = page.gsub(
+					charset_pattern_big,
+					charset_tag_big
+				)
+			elsif page.match(charset_pattern_small) then			
+				page = page.gsub(
+					charset_pattern_small,
+					charset_tag_small
+				)
+			else
+				page = page.gsub(
+					/<\s*title\s*>/i,
+					charset_tag_big
+				)
+			end
 
 			return page
 		end
@@ -210,40 +220,40 @@ class Spider
 end
 
 
-Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
+# Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
-Spider.create do |sp|
-	#sp.add_source('http://opennet.ru')
-	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
+# Spider.create do |sp|
+# 	#sp.add_source('http://opennet.ru')
+# 	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
 	
-	sp.depth = 2
-	sp.pages_per_node = 3
+# 	sp.depth = 2
+# 	sp.pages_per_node = 3
 
-	sp.threads = 3
+# 	sp.threads = 3
 	
-	sp.before_load = lambda { |uri| 
-		sp.info '==== предобработка ===='
-		Filter.link(uri) 
-	}
+# 	sp.before_load = lambda { |uri| 
+# 		sp.info '==== предобработка ===='
+# 		Filter.link(uri) 
+# 	}
 
-	sp.after_load = lambda { |uri,page| 
-		sp.info '==== постобработка ===='
-		sp.debug "размер страницы до: #{page.to_s.size}"
-		Filter.page(uri,page) 
-	}
-end.load
+# 	sp.after_load = lambda { |uri,page| 
+# 		sp.info '==== постобработка ===='
+# 		sp.debug "размер страницы до: #{page.to_s.size}"
+# 		Filter.page(uri,page) 
+# 	}
+# end.load
 
 
-# Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
+Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
 
-# sp = Spider.new
-# sp.add_source 'http://linux.org.ru'
-# sp.add_source 'http://lib.ru'
-# sp.depth = 3
-# sp.pages_per_node = 3
-# sp.before_load = lambda { |uri| Filter.link(uri) }
-# sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
-# data = sp.load
+sp = Spider.new
+#sp.add_source 'http://linux.org.ru'
+sp.add_source 'http://lib.ru'
+sp.depth = 3
+sp.pages_per_node = 3
+sp.before_load = lambda { |uri| Filter.link(uri) }
+sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
+data = sp.load
 
 
 # Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
