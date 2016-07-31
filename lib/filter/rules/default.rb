@@ -59,11 +59,13 @@ class DefaultSite
 		def link(uri); uri; end
 		def page(page); page; end
 		
-		def remove_script_filter(dom)
+		def remove_script(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
 			remove_tag(dom, 'script')
 		end
 
-		def remove_noscript_filter(dom)
+		def remove_noscript(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class})"
 			remove_tag(dom, 'noscript')
 		end
 		

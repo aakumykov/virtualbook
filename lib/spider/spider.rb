@@ -37,7 +37,7 @@ class Spider
 		@after_load = arg
 	end
 
-	def download(uri=nil)
+	def load(uri=nil)
 		debug_msg "#{self.class}.#{__method__}(#{uri})"
 
 		src = uri || @@source
@@ -53,7 +53,7 @@ class Spider
 						debug_msg "ФИЛЬТРОВАННЫЙ uri: #{uri}"
 					end
 					
-					page = load page: uri
+					page = download(page: uri)
 						debug_msg "загружена страница: #{page.class}, размер: #{page.to_s.size} байт"
 					
 					if @after_load then
@@ -69,7 +69,7 @@ class Spider
 
 	private
 
-		def load(*arg)
+		def download(*arg)
 			debug_msg "#{self.class}.#{__method__}(#{arg})"
 
 			arg = arg.first
@@ -172,7 +172,7 @@ Spider.create do |sp|
 		sp.info '==== постобработка ===='
 		Filter.page(uri,page) 
 	}
-end.download
+end.load
 
 
 # Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
@@ -184,12 +184,12 @@ end.download
 # sp.pages_per_node = 3
 # sp.before_load = lambda { |uri| Filter.link(uri) }
 # sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
-# data = sp.download
+# data = sp.load
 
 
 # Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
 
 # sp2 = Spider.new
 # sp2.depth = 1
-# data = sp2.download 'http://bash.im/comics'
-# data = sp2.download 'http://geektimes.ru'
+# data = sp2.load 'http://bash.im/comics'
+# data = sp2.load 'http://geektimes.ru'

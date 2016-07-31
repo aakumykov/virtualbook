@@ -8,9 +8,9 @@ class RuWikipediaOrg < DefaultSite
 
 	class WikipediaPage < DefaultPage
 		def page(dom)
-			puts " #{self.class}.#{__method__}"
-			dom = remove_script_filter(dom)
-			dom = remove_noscript_filter(dom)
+			debug_msg " #{self.class}.#{__method__}"
+			dom = remove_script(dom)
+			dom = remove_noscript(dom)
 			return dom
 		end
 		
@@ -18,6 +18,25 @@ class RuWikipediaOrg < DefaultSite
 		
 		def remove_navigation(dom)
 			debug_msg " #{self}.#{__method__}(#{dom.class})"
+			
+			[
+				"//div[@id='mw-navigation']",
+				"//table[@class='navbox']",
+				"//table[contains(@class,'navigation-box')]",
+				
+				"//div[@id='mw-hidden-catlinks']",
+				"//div[@id='mw-normal-catlinks']",	
+				
+				"//*[@id='footer-places']",
+				"//*[@id='footer-icons']",
+				
+				"//span[@class='mw-editsection']",
+				
+				"//div[@class='mw-indicators']",
+			].each { |xpath|
+				dom.search(xpath).remove
+			}
+			
 			return dom
 		end 
 	end
@@ -60,7 +79,6 @@ class RuWikipediaOrg < DefaultSite
 		end
 		
 		def page(page)
-			puts "СТРАНИЧНОЕ ПРАВИЛО: #{self}, #{self.class}"
 			super
 			remove_navigation(page)
 		end
