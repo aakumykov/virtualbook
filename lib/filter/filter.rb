@@ -6,6 +6,7 @@ require_relative '../msg/msg.rb'
 
 class Filter
 	include Msg
+	
 	COLOR = :blue
 
 	def self.link(*arg)
@@ -13,29 +14,18 @@ class Filter
 		self.new.link(*arg)
 	end
 
-	def self.page(*arg)
-		self.debug_msg "#{self}.#{__method__}(#{(arg.map &:class).join', '})"
-		self.new.page(*arg)
-	end
-
-	def initialize
-		debug_msg "создаётся объект #{self.class}"
-		@rules_dir = 'rules'
-	end
-
 	def link(uri)
 		debug_msg "#{self}.#{__method__}(#{uri})"
 		find_filter(uri).link(uri)
 	end
 
+	def self.page(uri,page)
+		self.debug_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
+		self.new.page(uri,page)
+	end
+
 	def page(uri,page)
 		debug_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
-		
-		page = Nokogiri::XML(page) { |config|
-			config.nonet
-			config.noerror
-			config.noent
-		}
 		
 		filter = find_filter(uri)
 			debug_msg " фильтр: #{filter}"
@@ -44,6 +34,11 @@ class Filter
 			debug_msg " результат filter.page: #{page.class}, #{page.to_s.size} байт"
 		
 		return page
+	end
+
+	def initialize
+		debug_msg "создаётся объект #{self.class}"
+		@rules_dir = 'rules'
 	end
 
 	private
@@ -77,7 +72,7 @@ class Filter
 		end
 		
 		filter = Object.const_get(object_name).new
-			debug_msg "найден фильтр: #{filter}"
+			debug_msg "создан фильтр: #{filter}"
 
 		rule = filter.find_rule(uri)
 			debug_msg "найдено правило: #{rule}"
@@ -86,7 +81,7 @@ class Filter
 	end
 
 	def require_filter(file_name)
-		debug_msg " загружаю фильтр '#{file_name}' "
+		debug_msg " загружаю файл '#{file_name}' "
 
 		file_path = File.realpath(
 			File.join(

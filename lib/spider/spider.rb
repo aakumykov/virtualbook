@@ -38,7 +38,7 @@ class Spider
 	end
 
 	def load(uri=nil)
-		debug_msg "#{__LINE__}: #{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self.class}.#{__method__}(#{uri})"
 
 		src = uri || @@source
 		src = [src] if not src.is_a? Array
@@ -61,15 +61,15 @@ class Spider
 						debug_msg " страница перекодирована, получившийся размер: #{data[:page].size} байт"
 						File.write('recoded-page.html',page)
 					
-					page = html2dom(page)
-						debug_msg " страница преобразована в #{page.class}, #{page.to_s.size} байт"
+					dom = html2dom(page)
+						debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
 					
 					if @after_load then
-						page = @after_load.call(uri,page)
-						debug_msg " ФИЛЬТРОВАННАЯ страница: #{page.class}, размер: #{page.to_s.size} байт"
+						dom = @after_load.call(uri,dom)
+						debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
 					end
 					
-					File.write "result.html", page
+					File.write "result.html", dom.to_xhtml
 				end
 			end
 		end
@@ -80,7 +80,7 @@ class Spider
 	private
 
 		def download(uri, opt={})
-			debug_msg "#{__LINE__}: #{self.class}.#{__method__}(#{uri}, #{opt})"
+			debug_msg "#{self.class}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
