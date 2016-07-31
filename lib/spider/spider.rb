@@ -53,8 +53,10 @@ class Spider
 						debug_msg "ФИЛЬТРОВАННЫЙ uri: #{uri}"
 					end
 					
-					page = download(page: uri)
-						debug_msg "загружена страница: #{page.class}, размер: #{page.to_s.size} байт"
+					data = download(uri)
+						debug_msg "загружена страница размером #{data[:page].size} байт"
+					
+					page = recode_page(data[:page], data[:headers])
 					
 					if @after_load then
 						page = @after_load.call(uri,page)
@@ -69,21 +71,17 @@ class Spider
 
 	private
 
-		def download(*arg)
+		def download(uri, opt={})
 			debug_msg "#{self.class}.#{__method__}(#{arg})"
 
-			arg = arg.first
-			mode = arg.keys.first
-			uri = arg.values.first
-			redirects_limit = arg[:redirects_limit] || 10	# опасная логика...
-			
-			mode = :page
+			mode = opt[:mode] || :full
+			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
 
 			uri = URI(uri)
 
-				# debug_msg " uri: #{uri}"
-				# debug_msg " mode: #{mode} (#{mode.class})"
-				# debug_msg " redirects_limit: #{redirects_limit}"
+				debug_msg " uri: #{uri}"
+				debug_msg " mode: #{mode} (#{mode.class})"
+				debug_msg " redirects_limit: #{redirects_limit}"
 
 			if 0==redirects_limit then
 				Msg::warning " слишком много пененаправлений"
@@ -98,7 +96,6 @@ class Spider
 
 			if [:head, :header, :headers].include?(mode) then
 				#debug_msg " скачиваю заголовки"
-				mode = :headers
 				request = Net::HTTP::Head.new(uri.request_uri)
 			else
 				#debug_msg " скачиваю полностью"
@@ -119,14 +116,14 @@ class Spider
 					#debug_msg "response keys: #{response.to_h.keys}"
 			
 				result = {
-					:data => response.body.to_s,
+					:page => response.body.to_s,
 					:headers => response.to_hash,
 				}
 				
 				if :headers==mode then
 					return result[:headers]
 				else
-					return result[:data]
+					return result
 				end
 			
 			when Net::HTTPRedirection
@@ -148,6 +145,50 @@ class Spider
 				raise " неприемлемый ответ сервера (#{response.code}, #{response.message}) для '#{@human_uri}' "
 				return nil
 			end
+		end
+
+
+		def recode_page(page, headers, target_charset='UTF-8')
+			debug_msg("#{self.class}.#{__method__}(#{page.size} bytes, #{headers.class})")
+			
+			page_charset = nil
+			headers_charset = nil
+			
+			pattern_big=Regexp.new(/<\s*meta\s+http-equiv\s*=\s*['"]\s*content-type\s*['"]\s*content\s*=\s*['"]\s*text\s*\/\s*html\s*;\s+charset\s*=\s*(?<charset>[a-z0-9-]+)\s*['"]\s*\/?\s*>/i)
+			pattern_small=Regexp.new(/<\s*meta\s+charset\s*=\s*['"]?\s*(?<charset>[a-z0-9-]+)\s*['"]?\s*\/?\s*>/i)
+
+			page_charset = page.match(pattern_big) || page.match(pattern_small)
+			page_charset = page_charset[:charset] if not page_charset.nil?
+			
+			headers.each_pair { |k,v|
+				if 'content-type'==k.downcase.strip then
+					res = v.first.downcase.strip.match(/charset\s*=\s*(?<charset>[a-z0-9-]+)/i)
+					headers_charset = res[:charset].upcase if not res.nil?
+				end
+			}
+			
+			page_charset = headers_charset if page_charset.nil?
+			page_charset = 'ISO-8859-1' if headers_charset.nil?
+
+			#puts "page_charset: #{page_charset}"
+
+			page = page.encode(
+				target_charset, 
+				page_charset, 
+				{ :replace => '_', :invalid => :replace, :undef => :replace }
+			)
+			
+			page = page.gsub(
+				pattern_big,
+				"<meta http-equiv='content-type' content='text/html; charset=#{page_charset}'>"
+			)
+			
+			page = page.gsub(
+				pattern_small,
+				"<meta charset='#{page_charset}' />"
+			)
+
+			return page
 		end
 end
 
