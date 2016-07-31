@@ -9,12 +9,12 @@ class Filter
 	COLOR = :blue
 
 	def self.link(*arg)
-		self.debug_msg "метод класса #{self}.#{__method__}(#{arg})"
+		self.debug_msg "#{self}.#{__method__}(#{arg})"
 		self.new.link(*arg)
 	end
 
 	def self.page(*arg)
-		self.debug_msg "метод класса #{self}.#{__method__}(#{(arg.map &:class).join', '})"
+		self.debug_msg "#{self}.#{__method__}(#{(arg.map &:class).join', '})"
 		self.new.page(*arg)
 	end
 
@@ -24,12 +24,12 @@ class Filter
 	end
 
 	def link(uri)
-		debug_msg "#{self}.#{__method__}"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 		find_filter(uri).link(uri)
 	end
 
 	def page(uri,page)
-		debug_msg "#{self}.#{__method__}(uri: #{uri}, page: #{page.class})"
+		debug_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
 		
 		page = Nokogiri::XML(page) { |config|
 			config.nonet
@@ -37,7 +37,13 @@ class Filter
 			config.noent
 		}
 		
-		find_filter(uri).page(page).to_xhtml
+		filter = find_filter(uri)
+			debug_msg " фильтр: #{filter}"
+			
+		page = filter.page(page)
+			debug_msg " результат filter.page: #{page.class}, #{page.to_s.size} байт"
+		
+		return page
 	end
 
 	private

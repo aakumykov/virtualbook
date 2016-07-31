@@ -38,7 +38,7 @@ class Spider
 	end
 
 	def load(uri=nil)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{__LINE__}: #{self.class}.#{__method__}(#{uri})"
 
 		src = uri || @@source
 		src = [src] if not src.is_a? Array
@@ -53,14 +53,16 @@ class Spider
 						debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
 					end
 					
-					data = download(uri)
+					data = download uri
 						debug_msg " загружена страница размером #{data[:page].size} байт"
+						File.write('raw-page.html',data[:page])
 					
 					page = recode_page(data[:page], data[:headers])
-						debug_msg " страница перекодирована, размер #{data[:page].size} байт"
+						debug_msg " страница перекодирована, получившийся размер: #{data[:page].size} байт"
+						File.write('recoded-page.html',page)
 					
 					page = html2dom(page)
-						debug_msg " страница преобразована в #{page.class}"
+						debug_msg " страница преобразована в #{page.class}, #{page.to_s.size} байт"
 					
 					if @after_load then
 						page = @after_load.call(uri,page)
@@ -78,7 +80,7 @@ class Spider
 	private
 
 		def download(uri, opt={})
-			debug_msg "#{self.class}.#{__method__}(#{uri}, #{opt})"
+			debug_msg "#{__LINE__}: #{self.class}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
@@ -137,8 +139,7 @@ class Spider
 				location = response['location']
 					Msg::notice " http-перенаправление на '#{location}'"
 				
-				result =  send(__method__, {
-					uri: location, 
+				result =  send(__method__, location, {
 					mode: mode,
 					redirects_limit: (redirects_limit-1),
 				})

@@ -9,14 +9,7 @@ class RuWikipediaOrg < DefaultSite
 	class WikipediaPage < DefaultPage
 		def page(dom)
 			debug_msg " #{self}.#{__method__}(#{dom.class})"
-			
-			dom = remove_script(dom)
-				debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
-			
-			dom = remove_noscript(dom)
-				debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
-			
-			return dom
+			super
 		end
 		
 		private
@@ -77,7 +70,8 @@ class RuWikipediaOrg < DefaultSite
 
 	class PrintableArticlePage < WikipediaPage
 		def accept
-			['/w/index.php\?title=FreeBSD&printable=yes']
+			[]
+			#['/w/index.php\?title=FreeBSD&printable=yes']
 		end
 		
 		def collect

@@ -54,12 +54,32 @@ class DefaultSite
 		
 		COLOR = :yellow
 	
-		def accept; ['.*']; end
-		def collect; []; end
-		def link(uri); uri; end
-		def page(page); page; end
+		def accept
+			['.*']
+		end
 		
-		def remove_script(dom)
+		def collect
+			[]
+		end
+		
+		def link(uri)
+			uri
+		end
+		
+		def page(dom)
+			debug_msg " #{self}.#{__method__}(#{dom.class}, #{dom.to_s.size} байт)"
+			
+			return dom
+			
+			dom = remove_script(dom)
+				#debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
+			dom = remove_noscript(dom)
+				#debug_msg " #{dom.class}, размер: #{dom.to_xhtml.size}"
+		end
+		
+		private
+		
+		def remove_script(dom)	
 			debug_msg " #{self}.#{__method__}(#{dom.class})"
 			remove_tag(dom, 'script')
 		end
@@ -69,11 +89,9 @@ class DefaultSite
 			remove_tag(dom, 'noscript')
 		end
 		
-		private
-		
 		def remove_tag(dom, tag_name)
-			dom.search("//#{tag_name}").each { |s|
-				s.remove
+			dom.search("//#{tag_name.to_s}").each { |tag|
+				tag.remove
 			}
 			return dom
 		end
