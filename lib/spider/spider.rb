@@ -50,17 +50,21 @@ class Spider
 				if uri = src.pop then
 					if @before_load then
 						uri = @before_load.call(uri)
-						debug_msg "ФИЛЬТРОВАННЫЙ uri: #{uri}"
+						debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
 					end
 					
 					data = download(uri)
-						debug_msg "загружена страница размером #{data[:page].size} байт"
+						debug_msg " загружена страница размером #{data[:page].size} байт"
 					
 					page = recode_page(data[:page], data[:headers])
+						debug_msg " страница перекодирована, размер #{data[:page].size} байт"
+					
+					page_dom = html2dom(page)
+						debug_msg " страница преобразована в #{page_dom.class}"
 					
 					if @after_load then
 						page = @after_load.call(uri,page)
-						debug_msg "ФИЛЬТРОВАННАЯ страница: #{page.class}, размер: #{page.to_s.size} байт"
+						debug_msg " ФИЛЬТРОВАННАЯ страница: #{page.class}, размер: #{page.to_s.size} байт"
 					end
 				end
 			end
@@ -72,16 +76,16 @@ class Spider
 	private
 
 		def download(uri, opt={})
-			debug_msg "#{self.class}.#{__method__}(#{arg})"
+			debug_msg "#{self.class}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
 
 			uri = URI(uri)
 
-				debug_msg " uri: #{uri}"
-				debug_msg " mode: #{mode} (#{mode.class})"
-				debug_msg " redirects_limit: #{redirects_limit}"
+				#~ debug_msg " uri: #{uri}"
+				#~ debug_msg " mode: #{mode} (#{mode.class})"
+				#~ debug_msg " redirects_limit: #{redirects_limit}"
 
 			if 0==redirects_limit then
 				Msg::warning " слишком много пененаправлений"
@@ -149,7 +153,7 @@ class Spider
 
 
 		def recode_page(page, headers, target_charset='UTF-8')
-			debug_msg("#{self.class}.#{__method__}(#{page.size} bytes, #{headers.class})")
+			debug_msg("#{self.class}.#{__method__}(#{page.size} байт, #{headers.class})")
 			
 			page_charset = nil
 			headers_charset = nil
@@ -189,6 +193,16 @@ class Spider
 			)
 
 			return page
+		end
+
+		def html2dom(page)
+			debug_msg "#{self}.#{__method__}(#{page.class}, #{page.size} байт)"
+			
+			dom = Nokogiri::XML(page) { |config|
+				config.nonet
+				config.noerror
+				config.noent
+			}
 		end
 end
 
