@@ -30,6 +30,13 @@ class VirtualBook
 		return self
 	end
 
+	def add_page(arg)
+		debug_msg "#{self}.#{__method__}(#{arg.keys})"
+		parent = arg[:parent]
+		title = arg[:title]
+		content = arg[:content]
+	end
+
 	def import(subject)
 		debug_msg "#{self}.#{__method__}(#{subject})"
 		return self
@@ -58,9 +65,18 @@ VirtualBook.create do |book|
 	book.title = 'Книга'
 	book.author = 'Андрей Кумыч'
 
-	book.import('http://opennet.ru').depth(1).count(10)
-	book.import('http://linux.org.ru')
-	book.import('http://ru.wikipedia.org')
+	book.add_page(parent: 0, title: 'Введение', content: 'vvedenie.html')
+
+	# book.add_page do |page|
+	# 	page.parent = 0
+	# 	page.title = 'Глава 1'
+	# 	page.content = 'glava1.html'
+	# end
+
+	book.import('http://ru.wikipedia.org/wiki/FreeDOS')
+	
+	# book.import('http://opennet.ru').depth(1).count(10)
+	# book.import('http://linux.org.ru')
 end.create_epub.save('opennet')
 
 
