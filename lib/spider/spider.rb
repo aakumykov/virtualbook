@@ -256,9 +256,9 @@ end
 # data = sp.load
 
 
-Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
-
-sp2 = Spider.new
-sp2.depth = 1
-data = sp2.load 'http://bash.im/comics'
+#~ Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
+#~ 
+#~ sp2 = Spider.new
+#~ sp2.depth = 1
+#~ data = sp2.load 'http://bash.im/comics'
 #data = sp2.load 'http://geektimes.ru'
