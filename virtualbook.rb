@@ -35,6 +35,7 @@ class VirtualBook
 		debug_msg "#{self}.#{__method__}(#{block})"
 		
 		pages = instance_eval(&block)
+			debug_msg "#{self}.#{__method__}(): получены страницы #{pages.class}[#{pages.size}]"
 		
 		return self
 	end

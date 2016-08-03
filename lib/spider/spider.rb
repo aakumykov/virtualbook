@@ -17,16 +17,11 @@ class Spider
 		self.new(&block)
 	end
 
-	def self.load(src)
-		debug_msg "#{self}.#{__method__}(#{src})"
-		self.new.load(src)
-	end
-
 	def initialize(&block)
 		debug_msg "#{self}.#{__method__}(#{block})"
 		instance_eval(&block) if block_given?
 
-		@threads ||= 1
+		@threads_count ||= 1
 		
 		self.before_load = lambda { |uri| Filter.link(uri) }
 	end
@@ -44,6 +39,11 @@ class Spider
 		@after_load = arg
 	end
 
+	def self.load(src)
+		debug_msg "#{self}.#{__method__}(#{src})"
+		self.new.load(src)
+	end
+
 	def load(uri=nil)
 		debug_msg "#{self}.#{__method__}(#{uri})"
 
@@ -51,48 +51,50 @@ class Spider
 		src = [src] if not src.is_a? Array
 			debug_msg " src: #{src}"
 
-		threads = []
-		@threads.times do |t|
-			threads << Thread.new do
-				if uri = src.pop then
-					
-					if @before_load then
-						uri = @before_load.call(uri)
-						debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
+		results = []
+
+		while !(links_chunk = src.shift(@threads_count)).empty? do
+			debug_msg " порция URI: #{links_chunk}"
+		
+			threads = []
+			
+			links_chunk.count.times do |t|
+				threads << Thread.new do
+					if uri = links_chunk.pop then
+						
+						if @before_load then
+							uri = @before_load.call(uri)
+							debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
+						end
+						
+						data = download uri
+							debug_msg " загружена страница размером #{data[:page].size} байт"
+							File.write('raw-page.html',data[:page])
+						
+						page = recode_page(data[:page], data[:headers])
+							debug_msg " страница перекодирована, получившийся размер: #{page.size} байт"
+							File.write('recoded-page.html',page)
+						
+						dom = html2dom(page)
+							debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
+						
+						if @after_load then
+							dom = @after_load.call(uri,dom)
+							debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
+						end
+						
+						output_page = dom.to_xhtml
+						  File.write "result.html", output_page
+						Thread.current[:output] = output_page
 					end
-					
-					data = download uri
-						debug_msg " загружена страница размером #{data[:page].size} байт"
-						File.write('raw-page.html',data[:page])
-					
-					page = recode_page(data[:page], data[:headers])
-						debug_msg " страница перекодирована, получившийся размер: #{page.size} байт"
-						File.write('recoded-page.html',page)
-					
-					dom = html2dom(page)
-						debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
-					
-					if @after_load then
-						dom = @after_load.call(uri,dom)
-						debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
-					end
-					
-					output_page = dom.to_xhtml
-					  File.write "result.html", output_page
-					Thread.current[:output] = output_page
 				end
+			end
+
+			threads.each do |thr|
+				results << thr.join[:output]
 			end
 		end
 
-		
-		results = []
-		
-		threads.each do |thr|
-			results << thr.join[:output]
-		end
-		
-		#debug_msg " results: #{results.map{|r| r.class}}"
-		
 		return results
 	end
 
@@ -289,6 +291,8 @@ end
 
 #Msg.info "#{'~'*15} прямой вызов Spider.load #{'~'*15}"
 
-#Spider.load 'http://opennet.ru'
+#res = Spider.load 'http://opennet.ru'
+#res = Spider.load ['http://opennet.ru', 'http://linux.org.ru']
+#puts "res: #{res.class}, #{res.count}"
 #Spider.load 'http://ru.wikipedia.org/wiki/FreeDOS'
 #Spider.load 'http://ru.wikipedia2.org/wiki/FreeDOS'
