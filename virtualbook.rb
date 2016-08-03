@@ -31,27 +31,10 @@ class VirtualBook
 		return self
 	end
 
-	def add_page(page=nil, &block)
-		debug_msg "#{self}.#{__method__}(#{page}, #{block})"
+	def add_page(&block)
+		debug_msg "#{self}.#{__method__}(#{block})"
 		
-		page_mode = !page.nil?
-		block_mode = block_given?
-		
-		all_pages = []
-		
-		if page_mode then
-			page = [page] if not page.is_a? Array
-			all_pages += page
-		end
-		
-		if block_mode then
-			block_pages = instance_eval(&block)
-			block_pages = [block_pages] if not block_pages.is_a? Array
-			all_pages += block_pages
-		end
-		
-		debug_msg "===== all_pages ====="
-		debug_msg all_pages
+		pages = instance_eval(&block)
 		
 		return self
 	end
@@ -87,7 +70,7 @@ Msg.debug '~~~~~~~~~~~~ блоком ~~~~~~~~~~~~'
 VirtualBook.create do |book|
 	book.title = 'Книга'
 	book.author = 'Андрей Кумыч'
-
+	
 	book.add_page do
 		Spider.load 'http://opennet.ru'
 	end

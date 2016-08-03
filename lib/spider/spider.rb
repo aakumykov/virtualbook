@@ -17,8 +17,13 @@ class Spider
 		self.new(&block)
 	end
 
+	def self.load(src)
+		debug_msg "#{self}.#{__method__}(#{src})"
+		self.new.load(src)
+	end
+
 	def initialize(&block)
-		debug_msg "#{self.class}.#{__method__}(#{block})"
+		debug_msg "#{self}.#{__method__}(#{block})"
 		instance_eval(&block) if block_given?
 
 		@threads ||= 1
@@ -27,7 +32,7 @@ class Spider
 	end
 
 	def add_source(uri)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 		@@source << uri
 	end
 
@@ -40,7 +45,7 @@ class Spider
 	end
 
 	def load(uri=nil)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 
 		src = uri || @@source
 		src = [src] if not src.is_a? Array
@@ -73,10 +78,8 @@ class Spider
 					end
 					
 					output_page = dom.to_xhtml
-					
-					Thread.current[:output] = [output_page]
-					
-					File.write "result.html", output_page
+					  File.write "result.html", output_page
+					Thread.current[:output] = output_page
 				end
 			end
 		end
@@ -85,10 +88,10 @@ class Spider
 		results = []
 		
 		threads.each do |thr|
-			results += thr.join[:output]
+			results << thr.join[:output]
 		end
 		
-		debug_msg " results (#{results.count})"
+		#debug_msg " results: #{results.map{|r| r.class}}"
 		
 		return results
 	end
@@ -96,7 +99,7 @@ class Spider
 	private
 
 		def download(uri, opt={})
-			debug_msg "#{self.class}.#{__method__}(#{uri}, #{opt})"
+			debug_msg "#{self}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
@@ -272,14 +275,20 @@ end
 # data = sp.load
 
 
-Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
+#Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
 
-sp2 = Spider.new
-sp2.depth = 1
+#sp2 = Spider.new
+#sp2.depth = 1
 #sp2.before_load = lambda { |uri| Filter.link(uri) }
 #data = sp2.load 'http://bash.im/comics'
 #data = sp2.load 'http://geektimes.ru'
 #data = sp2.load 'http://opennet.ru'
-data = sp2.load 'http://ru.wikipedia.org/wiki/FreeDOS'
-	Msg.debug "data: #{data.class} (#{data.size})"
-	data.each { |item| puts " #{item.class}" }
+#data = sp2.load 'http://ru.wikipedia.org/wiki/FreeDOS'
+#Msg.debug "data: #{data.map{|d| d.class}}"
+
+
+#Msg.info "#{'~'*15} прямой вызов Spider.load #{'~'*15}"
+
+#Spider.load 'http://opennet.ru'
+#Spider.load 'http://ru.wikipedia.org/wiki/FreeDOS'
+#Spider.load 'http://ru.wikipedia2.org/wiki/FreeDOS'
