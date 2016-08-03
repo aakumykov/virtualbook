@@ -73,7 +73,7 @@ VirtualBook.create do |book|
 	book.author = 'Андрей Кумыч'
 	
 	book.add_page do
-		Spider.load 'http://opennet.ru'
+		Spider.load ['http://opennet.ru', 'http://ru.wikipedia.org/wiki/FreeDOS']
 	end
 
 	# book.add_page do |page|
