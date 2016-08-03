@@ -22,6 +22,8 @@ class Spider
 		instance_eval(&block) if block_given?
 
 		@threads ||= 1
+		
+		self.before_load = lambda { |uri| Filter.link(uri) }
 	end
 
 	def add_source(uri)
@@ -48,6 +50,7 @@ class Spider
 		@threads.times do |t|
 			threads << Thread.new do
 				if uri = src.pop then
+					
 					if @before_load then
 						uri = @before_load.call(uri)
 						debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
@@ -69,12 +72,25 @@ class Spider
 						debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
 					end
 					
-					File.write "result.html", dom.to_xhtml
+					output_page = dom.to_xhtml
+					
+					Thread.current[:output] = [output_page]
+					
+					File.write "result.html", output_page
 				end
 			end
 		end
 
-		threads.each &:join
+		
+		results = []
+		
+		threads.each do |thr|
+			results += thr.join[:output]
+		end
+		
+		debug_msg " results (#{results.count})"
+		
+		return results
 	end
 
 	private
@@ -256,9 +272,14 @@ end
 # data = sp.load
 
 
-#~ Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
-#~ 
-#~ sp2 = Spider.new
-#~ sp2.depth = 1
-#~ data = sp2.load 'http://bash.im/comics'
+Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
+
+sp2 = Spider.new
+sp2.depth = 1
+#sp2.before_load = lambda { |uri| Filter.link(uri) }
+#data = sp2.load 'http://bash.im/comics'
 #data = sp2.load 'http://geektimes.ru'
+#data = sp2.load 'http://opennet.ru'
+data = sp2.load 'http://ru.wikipedia.org/wiki/FreeDOS'
+	Msg.debug "data: #{data.class} (#{data.size})"
+	data.each { |item| puts " #{item.class}" }

@@ -90,7 +90,7 @@ VirtualBook.create do |book|
 
 	book.add_page do
 		Spider.load 'http://opennet.ru'
-	end.qwerty
+	end
 
 	# book.add_page do |page|
 	# 	page.parent = 0
