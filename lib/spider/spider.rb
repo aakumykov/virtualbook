@@ -8,7 +8,7 @@ class Spider
 	include Msg
 	COLOR = :green
 
-	attr_accessor :depth, :pages_per_node, :threads
+	attr_accessor :depth, :pages_per_node
 
 	@@source = []
 
@@ -24,6 +24,10 @@ class Spider
 		@threads_count ||= 1
 		
 		self.before_load = lambda { |uri| Filter.link(uri) }
+	end
+
+	def threads=(arg)
+		@threads_count = arg.to_i
 	end
 
 	def add_source(uri)
@@ -243,50 +247,50 @@ end
 
 # Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
-# Spider.create do |sp|
-# 	#sp.add_source('http://opennet.ru')
-# 	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
-	
-# 	sp.depth = 2
-# 	sp.pages_per_node = 3
-
-# 	sp.threads = 3
-	
-# 	sp.before_load = lambda { |uri| 
-# 		sp.info '==== предобработка ===='
-# 		Filter.link(uri) 
-# 	}
-
-# 	sp.after_load = lambda { |uri,page| 
-# 		sp.info '==== постобработка ===='
-# 		sp.debug "размер страницы до: #{page.to_s.size}"
-# 		Filter.page(uri,page) 
-# 	}
-# end.load
-
+#~ data = Spider.create do |sp|
+	#~ sp.add_source('http://opennet.ru')
+	#~ sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
+#~ 
+	#~ sp.depth = 2
+	#~ sp.pages_per_node = 3
+#~ 
+	#~ sp.threads = 3
+#~ 
+	#~ sp.before_load = lambda { |uri| 
+		#~ sp.info '==== предобработка ===='
+		#~ Filter.link(uri) 
+	#~ }
+#~ 
+	#~ sp.after_load = lambda { |uri,page| 
+		#~ sp.info '==== постобработка ===='
+		#~ sp.debug "размер страницы до: #{page.to_s.size}"
+		#~ Filter.page(uri,page) 
+	#~ }
+#~ end
+#~ data = data.load
+#~ #Msg.debug "data: #{data.map{|d| d.class}}"
 
 # Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
 
-# sp = Spider.new
-# #sp.add_source 'http://linux.org.ru'
-# sp.add_source 'http://lib.ru'
-# sp.depth = 3
-# sp.pages_per_node = 3
-# sp.before_load = lambda { |uri| Filter.link(uri) }
-# sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
-# data = sp.load
-
+#~ sp = Spider.new
+#~ sp.add_source 'http://linux.org.ru'
+#~ sp.add_source 'http://lib.ru'
+#~ sp.add_source 'http://opennet.ru'
+#~ sp.threads = 5
+#~ sp.depth = 3
+#~ sp.pages_per_node = 3
+#~ #sp.before_load = lambda { |uri| Filter.link(uri) }
+#~ #sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
+#~ data = sp.load
+#~ Msg.debug "data: #{data.map{|d| d.class}}"
 
 #Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
 
-#sp2 = Spider.new
-#sp2.depth = 1
-#sp2.before_load = lambda { |uri| Filter.link(uri) }
-#data = sp2.load 'http://bash.im/comics'
-#data = sp2.load 'http://geektimes.ru'
-#data = sp2.load 'http://opennet.ru'
-#data = sp2.load 'http://ru.wikipedia.org/wiki/FreeDOS'
-#Msg.debug "data: #{data.map{|d| d.class}}"
+#~ sp2 = Spider.new
+#~ sp2.depth = 1
+#~ #sp2.before_load = lambda { |uri| Filter.link(uri) }
+#~ data = sp2.load 'http://bash.im/comics'
+#~ Msg.debug "data: #{data.map{|d| d.class}}"
 
 
 #Msg.info "#{'~'*15} прямой вызов Spider.load #{'~'*15}"
