@@ -8,7 +8,7 @@ class Spider
 	include Msg
 	COLOR = :green
 
-	attr_accessor :depth, :pages_per_node, :threads
+	attr_accessor :depth, :pages_per_node
 
 	@@source = []
 
@@ -18,14 +18,20 @@ class Spider
 	end
 
 	def initialize(&block)
-		debug_msg "#{self.class}.#{__method__}(#{block})"
+		debug_msg "#{self}.#{__method__}(#{block})"
 		instance_eval(&block) if block_given?
 
-		@threads ||= 1
+		@threads_count ||= 1
+		
+		self.before_load = lambda { |uri| Filter.link(uri) }
+	end
+
+	def threads=(arg)
+		@threads_count = arg.to_i
 	end
 
 	def add_source(uri)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 		@@source << uri
 	end
 
@@ -37,50 +43,69 @@ class Spider
 		@after_load = arg
 	end
 
+	def self.load(src)
+		debug_msg "#{self}.#{__method__}(#{src})"
+		self.new.load(src)
+	end
+
 	def load(uri=nil)
-		debug_msg "#{self.class}.#{__method__}(#{uri})"
+		debug_msg "#{self}.#{__method__}(#{uri})"
 
 		src = uri || @@source
 		src = [src] if not src.is_a? Array
 			debug_msg " src: #{src}"
 
-		threads = []
-		@threads.times do |t|
-			threads << Thread.new do
-				if uri = src.pop then
-					if @before_load then
-						uri = @before_load.call(uri)
-						debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
+		results = []
+
+		while !(links_chunk = src.shift(@threads_count)).empty? do
+			debug_msg " порция URI: #{links_chunk}"
+		
+			threads = []
+			
+			links_chunk.count.times do |t|
+				threads << Thread.new do
+					if uri = links_chunk.pop then
+						
+						if @before_load then
+							uri = @before_load.call(uri)
+							debug_msg " ФИЛЬТРОВАННЫЙ uri: #{uri}"
+						end
+						
+						data = download uri
+							debug_msg " загружена страница размером #{data[:page].size} байт"
+							File.write('raw-page.html',data[:page])
+						
+						page = recode_page(data[:page], data[:headers])
+							debug_msg " страница перекодирована, получившийся размер: #{page.size} байт"
+							File.write('recoded-page.html',page)
+						
+						dom = html2dom(page)
+							debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
+						
+						if @after_load then
+							dom = @after_load.call(uri,dom)
+							debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
+						end
+						
+						output_page = dom.to_xhtml
+						  File.write "result.html", output_page
+						Thread.current[:output] = output_page
 					end
-					
-					data = download uri
-						debug_msg " загружена страница размером #{data[:page].size} байт"
-						File.write('raw-page.html',data[:page])
-					
-					page = recode_page(data[:page], data[:headers])
-						debug_msg " страница перекодирована, получившийся размер: #{page.size} байт"
-						File.write('recoded-page.html',page)
-					
-					dom = html2dom(page)
-						debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
-					
-					if @after_load then
-						dom = @after_load.call(uri,dom)
-						debug_msg " ФИЛЬТРОВАННАЯ страница: #{dom.class}, размер: #{dom.to_s.size} байт"
-					end
-					
-					File.write "result.html", dom.to_xhtml
 				end
+			end
+
+			threads.each do |thr|
+				results << thr.join[:output]
 			end
 		end
 
-		threads.each &:join
+		return results
 	end
 
 	private
 
 		def download(uri, opt={})
-			debug_msg "#{self.class}.#{__method__}(#{uri}, #{opt})"
+			debug_msg "#{self}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
@@ -222,43 +247,56 @@ end
 
 # Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
-# Spider.create do |sp|
-# 	#sp.add_source('http://opennet.ru')
-# 	sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
-	
-# 	sp.depth = 2
-# 	sp.pages_per_node = 3
-
-# 	sp.threads = 3
-	
-# 	sp.before_load = lambda { |uri| 
-# 		sp.info '==== предобработка ===='
-# 		Filter.link(uri) 
-# 	}
-
-# 	sp.after_load = lambda { |uri,page| 
-# 		sp.info '==== постобработка ===='
-# 		sp.debug "размер страницы до: #{page.to_s.size}"
-# 		Filter.page(uri,page) 
-# 	}
-# end.load
-
+#~ data = Spider.create do |sp|
+	#~ sp.add_source('http://opennet.ru')
+	#~ sp.add_source('http://ru.wikipedia.org/wiki/FreeBSD')
+#~ 
+	#~ sp.depth = 2
+	#~ sp.pages_per_node = 3
+#~ 
+	#~ sp.threads = 3
+#~ 
+	#~ sp.before_load = lambda { |uri| 
+		#~ sp.info '==== предобработка ===='
+		#~ Filter.link(uri) 
+	#~ }
+#~ 
+	#~ sp.after_load = lambda { |uri,page| 
+		#~ sp.info '==== постобработка ===='
+		#~ sp.debug "размер страницы до: #{page.to_s.size}"
+		#~ Filter.page(uri,page) 
+	#~ }
+#~ end
+#~ data = data.load
+#~ #Msg.debug "data: #{data.map{|d| d.class}}"
 
 # Msg.info "#{'~'*15} вызов объектом #{'~'*15}"
 
-# sp = Spider.new
-# #sp.add_source 'http://linux.org.ru'
-# sp.add_source 'http://lib.ru'
-# sp.depth = 3
-# sp.pages_per_node = 3
-# sp.before_load = lambda { |uri| Filter.link(uri) }
-# sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
-# data = sp.load
+#~ sp = Spider.new
+#~ sp.add_source 'http://linux.org.ru'
+#~ sp.add_source 'http://lib.ru'
+#~ sp.add_source 'http://opennet.ru'
+#~ sp.threads = 5
+#~ sp.depth = 3
+#~ sp.pages_per_node = 3
+#~ #sp.before_load = lambda { |uri| Filter.link(uri) }
+#~ #sp.after_load = lambda { |uri,page| Filter.page(uri,page) }
+#~ data = sp.load
+#~ Msg.debug "data: #{data.map{|d| d.class}}"
+
+#Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
+
+#~ sp2 = Spider.new
+#~ sp2.depth = 1
+#~ #sp2.before_load = lambda { |uri| Filter.link(uri) }
+#~ data = sp2.load 'http://bash.im/comics'
+#~ Msg.debug "data: #{data.map{|d| d.class}}"
 
 
-Msg.info "#{'~'*15} вызов объектом 2 #{'~'*15}"
+#Msg.info "#{'~'*15} прямой вызов Spider.load #{'~'*15}"
 
-sp2 = Spider.new
-sp2.depth = 1
-data = sp2.load 'http://bash.im/comics'
-#data = sp2.load 'http://geektimes.ru'
+#res = Spider.load 'http://opennet.ru'
+#res = Spider.load ['http://opennet.ru', 'http://linux.org.ru']
+#puts "res: #{res.class}, #{res.count}"
+#Spider.load 'http://ru.wikipedia.org/wiki/FreeDOS'
+#Spider.load 'http://ru.wikipedia2.org/wiki/FreeDOS'
