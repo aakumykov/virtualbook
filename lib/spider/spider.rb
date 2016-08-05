@@ -74,11 +74,11 @@ class Spider
 						
 						data = download uri
 							debug_msg " загружена страница размером #{data[:page].size} байт"
-							File.write('raw-page.html',data[:page])
+							#File.write('raw-page.html',data[:page])
 						
 						page = recode_page(data[:page], data[:headers])
 							debug_msg " страница перекодирована, получившийся размер: #{page.size} байт"
-							File.write('recoded-page.html',page)
+							#File.write('recoded-page.html',page)
 						
 						dom = html2dom(page)
 							debug_msg " страница преобразована в #{dom.class}, #{dom.to_s.size} байт"
@@ -89,14 +89,20 @@ class Spider
 						end
 						
 						output_page = dom.to_xhtml
-						  File.write "result.html", output_page
-						Thread.current[:output] = output_page
+							#File.write "result.html", output_page
+						
+						Thread.current[:page] = output_page
+						Thread.current[:headers] = data[:headers]
 					end
 				end
 			end
 
 			threads.each do |thr|
-				results << thr.join[:output]
+				t_res = thr.join
+				results << WWWPage.new(
+					t_res[:page],
+					t_res[:headers],
+				)
 			end
 		end
 

@@ -4,10 +4,10 @@ system 'clear'
 require 'nokogiri'
 require_relative '../lib/msg/msg.rb'
 
-class Page
+class WWWPage
 	include Msg
 
-	def initialize(page, headers)
+	def initialize(page, headers={})
 		#puts "#{self}.#{__method__}(page: #{page.class}, opt: #{opt}, block: #{block})"
 		
 		@orig_page = page.to_s
@@ -29,7 +29,7 @@ class Page
 
 	private
 
-		def recode_page(page, headers, target_charset='UTF-8')
+		def recode_page(page, headers={}, target_charset='UTF-8')
 			#Msg::debug("#{self.class}.#{__method__}(page: #{page.class}, headers: #{headers})")
 			
 			page_charset = nil
@@ -42,6 +42,8 @@ class Page
 			page_charset = temp_page.match(pattern_big) || temp_page.match(pattern_small)
 			page_charset = page_charset[:charset] if not page_charset.nil?
 			
+				#Msg::debug " page_charset: #{page_charset}"
+			
 			headers.each_pair { |k,v|
 				if 'content-type'==k.downcase.strip then
 					res = v.first.downcase.strip.match(/charset\s*=\s*(?<charset>[a-z0-9-]+)/i)
@@ -49,15 +51,25 @@ class Page
 				end
 			}
 			
-			page_charset = headers_charset if page_charset.nil?
-			page_charset = 'ISO-8859-1' if headers_charset.nil?
+				#Msg::debug " headers_charset: #{headers_charset}"
+			
+			if page_charset && headers_charset then
+				current_charset = headers_charset
+			elsif page_charset && !headers_charset then
+				current_charset = page_charset
+			elsif !page_charset && headers_charset then
+				current_charset = headers_charset
+			else
+				current_charset = 'ISO-8859-1'
+			end
+			
+			current_charset.downcase!
 
-				#debug_msg " headers_charset: #{headers_charset}"
-				#debug_msg " page_charset: #{page_charset}"
+				#debug_msg " current_charset: #{current_charset}"
 
 			page = page.encode(
 				target_charset, 
-				page_charset, 
+				current_charset, 
 				{ :replace => '_', :invalid => :replace, :undef => :replace }
 			)
 			
@@ -75,3 +87,7 @@ class Page
 		end
 end
 
+
+#page = WWWPage.new( File.read('opennet.html') )
+#page = WWWPage.new( File.read('opennet.html') , {'content-type'=>['text/html;charset=KOI8-r']})
+#File.write('result.html', page.text)
