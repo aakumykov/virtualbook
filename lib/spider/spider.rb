@@ -3,6 +3,7 @@
 require 'net/http'
 require_relative '../filter/filter.rb'
 require_relative '../msg/msg.rb'
+require_relative '../page/www_page.rb'
 
 class Spider
 	include Msg
@@ -243,7 +244,6 @@ class Spider
 			}
 		end
 end
-
 
 # Msg.info "#{'~'*15} вызов с блоком #{'~'*15}"
 
