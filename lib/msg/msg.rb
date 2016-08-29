@@ -6,11 +6,11 @@ module Msg
 	COLOR = :black
 
 	def debug_msg arg
-		colorize arg
+		colorize arg if DEBUG_LEVEL == 0
 	end
 
 	def info_msg arg
-		colorize arg
+		colorize arg if DEBUG_LEVEL <= 1
 	end
 
 	# служебное

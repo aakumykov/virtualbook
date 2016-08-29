@@ -13,6 +13,7 @@ class Spider
 
 	@@source = []
 
+	# системные методы
 	def self.create(&block)
 		self.debug_msg "#{self}.#{__method__}(#{block})"
 		self.new(&block)
@@ -27,12 +28,14 @@ class Spider
 		self.before_load = lambda { |uri| Filter.link(uri) }
 	end
 
+	# вспомогательные методы
 	def threads=(arg)
 		@threads_count = arg.to_i
 	end
 
+	# основные методы
 	def add_source(uri)
-		debug_msg "#{self}.#{__method__}(#{uri})"
+		info_msg "#{self}.#{__method__}(#{uri})"
 		@@source << uri
 	end
 
@@ -45,12 +48,12 @@ class Spider
 	end
 
 	def self.load(src)
-		debug_msg "#{self}.#{__method__}(#{src})"
+		info_msg "#{self}.#{__method__}(#{src})"
 		self.new.load(src)
 	end
 
 	def load(uri=nil)
-		debug_msg "#{self}.#{__method__}(#{uri})"
+		info_msg "#{self}.#{__method__}(#{uri})"
 
 		src = uri || @@source
 		src = [src] if not src.is_a? Array
@@ -111,8 +114,9 @@ class Spider
 
 	private
 
+		# основные методы
 		def download(uri, opt={})
-			debug_msg "#{self}.#{__method__}(#{uri}, #{opt})"
+			info_msg "#{self}.#{__method__}(#{uri}, #{opt})"
 
 			mode = opt[:mode] || :full
 			redirects_limit = opt[:redirects_limit] || 10	# опасная логика...
@@ -186,9 +190,8 @@ class Spider
 			end
 		end
 
-
 		def recode_page(page, headers={}, target_charset='UTF-8')
-			#debug_msg("#{self.class}.#{__method__}(#{page.size} байт, #{headers.keys})")
+			info_msg("#{self.class}.#{__method__}(#{page.size} байт, #{headers.keys})")
 			
 			return page if headers.fetch('content-type','').first.strip.match(/utf[-]?8/i)
 			
@@ -240,6 +243,7 @@ class Spider
 			return page
 		end
 
+		# вспомогательные методы
 		def html2dom(page)
 			debug_msg "#{self}.#{__method__}(#{page.class}, #{page.size} байт)"
 			

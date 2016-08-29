@@ -14,29 +14,29 @@ class RuWikipediaOrg < DefaultSite
 		
 		private
 		
-		def remove_navigation(dom)
-			debug_msg " #{self}.#{__method__}(#{dom.class})"
-			
-			[
-				"//div[@id='mw-navigation']",
-				"//table[@class='navbox']",
-				"//table[contains(@class,'navigation-box')]",
+			def remove_navigation(dom)
+				debug_msg " #{self}.#{__method__}(#{dom.class})"
 				
-				"//div[@id='mw-hidden-catlinks']",
-				"//div[@id='mw-normal-catlinks']",	
+				[
+					"//div[@id='mw-navigation']",
+					"//table[@class='navbox']",
+					"//table[contains(@class,'navigation-box')]",
+					
+					"//div[@id='mw-hidden-catlinks']",
+					"//div[@id='mw-normal-catlinks']",	
+					
+					"//*[@id='footer-places']",
+					"//*[@id='footer-icons']",
+					
+					"//span[@class='mw-editsection']",
+					
+					"//div[@class='mw-indicators']",
+				].each { |xpath|
+					dom.search(xpath).remove
+				}
 				
-				"//*[@id='footer-places']",
-				"//*[@id='footer-icons']",
-				
-				"//span[@class='mw-editsection']",
-				
-				"//div[@class='mw-indicators']",
-			].each { |xpath|
-				dom.search(xpath).remove
-			}
-			
-			return dom
-		end 
+				return dom
+			end 
 	end
 
 	class MainPage < WikipediaPage

@@ -3,8 +3,9 @@ require 'nokogiri'
 class WWWPage
 	include Msg
 
+	# системные методы
 	def initialize(page, headers={})
-		#puts "#{self}.#{__method__}(page: #{page.class}, opt: #{opt}, block: #{block})"
+		debug_msg "#{self}.#{__method__}(page: #{page.class}, opt: #{opt}, block: #{block})"
 		
 		@orig_page = page.to_s
 		@headers = headers
@@ -19,14 +20,18 @@ class WWWPage
 		}
 	end
 
+	# основные методы
 	def text
+		info_msg "#{self}.#{__method__}()"
+
 		@page_dom.to_html
 	end
 
 	private
 
+		# основные методы
 		def recode_page(page, headers={}, target_charset='UTF-8')
-			#Msg::debug("#{self.class}.#{__method__}(page: #{page.class}, headers: #{headers})")
+			info_msg("#{self.class}.#{__method__}(page: #{page.class}, headers: #{headers.class})")
 			
 			page_charset = nil
 			headers_charset = nil

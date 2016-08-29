@@ -9,23 +9,30 @@ class Filter
 	
 	COLOR = :blue
 
+	# системные методы
+	def initialize
+		debug_msg "создаётся объект #{self.class}"
+		@rules_dir = 'rules'
+	end
+
+	# основные методы
 	def self.link(*arg)
-		self.debug_msg "#{self}.#{__method__}(#{arg})"
+		self.info_msg "#{self}.#{__method__}(#{arg})"
 		self.new.link(*arg)
 	end
 
 	def link(uri)
-		debug_msg "#{self}.#{__method__}(#{uri})"
+		info_msg "#{self}.#{__method__}(#{uri})"
 		find_filter(uri).link(uri)
 	end
 
 	def self.page(uri,page)
-		self.debug_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
+		self.info_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
 		self.new.page(uri,page)
 	end
 
 	def page(uri,page)
-		debug_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
+		info_msg "#{self}.#{__method__}(#{uri}, #{page.class}, #{page.to_s.size} байт)"
 		
 		filter = find_filter(uri)
 			debug_msg " фильтр: #{filter}"
@@ -36,65 +43,62 @@ class Filter
 		return page
 	end
 
-	def initialize
-		debug_msg "создаётся объект #{self.class}"
-		@rules_dir = 'rules'
-	end
-
 	private
 
-	def find_filter(uri)
-		debug_msg "ищу фильтр для '#{uri}'"
+		# основные методы
+		def find_filter(uri)
+			debug_msg "ищу фильтр для '#{uri}'"
 
-		uri = URI(uri)
-		
-		filter_name = uri.host.downcase.gsub('.','_')
-			#debug_msg " filter_name : #{filter_name}"
-		file_name = "#{filter_name}.rb"
-			#debug_msg " file_name: #{file_name}"
-		
-		#debug_msg '@'*50
-		#require '/home/andrey/разработка/ruby/virtualbook/lib/filter/rules/ru_wikipedia_org.rb'
-		#debug_msg '@'*50
-		
-		begin
-			#debug_msg " попытка загрузить '#{file_name}' "
-			require_filter(file_name)
-			object_name = filter_name.split('_').map{|p| p.capitalize}.join
-		rescue => e
-			# debug_msg " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
-			# debug_msg e.message
-			# debug_msg e.backtrace
-			# debug_msg " ------------------------------------------------------------ "
-			# debug_msg " попытка загрузить 'default.rb' "
-			require_filter 'default.rb'
-			object_name = 'DefaultSite'
+			uri = URI(uri)
+			
+			filter_name = uri.host.downcase.gsub('.','_')
+				#debug_msg " filter_name : #{filter_name}"
+			file_name = "#{filter_name}.rb"
+				#debug_msg " file_name: #{file_name}"
+			
+			#debug_msg '@'*50
+			#require '/home/andrey/разработка/ruby/virtualbook/lib/filter/rules/ru_wikipedia_org.rb'
+			#debug_msg '@'*50
+			
+			begin
+				#debug_msg " попытка загрузить '#{file_name}' "
+				require_filter(file_name)
+				object_name = filter_name.split('_').map{|p| p.capitalize}.join
+			rescue => e
+				# debug_msg " ------------ не удалось загрузить '#{file_name}' по причине: ------------ "
+				# debug_msg e.message
+				# debug_msg e.backtrace
+				# debug_msg " ------------------------------------------------------------ "
+				# debug_msg " попытка загрузить 'default.rb' "
+				require_filter 'default.rb'
+				object_name = 'DefaultSite'
+			end
+			
+			filter = Object.const_get(object_name).new
+				debug_msg "создан фильтр: #{filter}"
+
+			rule = filter.find_rule(uri)
+				debug_msg "найдено правило: #{rule}"
+
+			return rule.new
 		end
-		
-		filter = Object.const_get(object_name).new
-			debug_msg "создан фильтр: #{filter}"
 
-		rule = filter.find_rule(uri)
-			debug_msg "найдено правило: #{rule}"
+		# вспомогательные методы
+		def require_filter(file_name)
+			debug_msg " загружаю файл '#{file_name}' "
 
-		return rule.new
-	end
-
-	def require_filter(file_name)
-		debug_msg " загружаю файл '#{file_name}' "
-
-		file_path = File.realpath(
-			File.join(
-				File.dirname(File.realpath(__FILE__)),
-				"#{@rules_dir}",
-				file_name
+			file_path = File.realpath(
+				File.join(
+					File.dirname(File.realpath(__FILE__)),
+					"#{@rules_dir}",
+					file_name
+				)
 			)
-		)
-		
-			#debug_msg "  путь к файлу: #{file_path}"
-		
-		require file_path
-	end
+			
+				#debug_msg "  путь к файлу: #{file_path}"
+			
+			require file_path
+		end
 end
 
 # new_link = Filter.link('https://ru.wikipedia.org/wiki/Linux')

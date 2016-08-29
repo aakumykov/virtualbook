@@ -5,12 +5,14 @@ system 'clear'
 require_relative 'lib/msg/msg.rb'
 require_relative 'lib/spider/spider.rb'
 
+DEBUG_LEVEL=1
 
 class VirtualBook
 	include Msg
 
 	attr_accessor :title, :author, :language
 
+	# системные методы
 	def self.create(&block)
 		debug_msg "#{self}.#{__method__}()"
 		self.new(&block)
@@ -21,6 +23,7 @@ class VirtualBook
 		instance_eval(&block) if block_given?
 	end
 
+	# вспомогательные методы
 	def depth(level)
 		debug_msg "#{self}.#{__method__}(#{level})"
 		return self
@@ -31,31 +34,28 @@ class VirtualBook
 		return self
 	end
 
+	# основные методы
 	def add_page(&block)
-		debug_msg "#{self}.#{__method__}(#{block})"
+		info_msg "#{self}.#{__method__}(#{block})"
 		
 		pages = instance_eval(&block)
 			debug_msg "#{self}.#{__method__}(): получены страницы #{pages.class}[#{pages.size}]"
 		
 		return self
 	end
-	
-	def qwerty
-		debug_msg "#{self}.#{__method__}()"
-	end
 
 	def import(subject)
-		debug_msg "#{self}.#{__method__}(#{subject})"
+		info_msg "#{self}.#{__method__}(#{subject})"
 		return self
 	end
 
 	def create_epub(opt={})
-		debug_msg "#{self}.#{__method__}(#{opt})"
+		info_msg "#{self}.#{__method__}(#{opt})"
 		return self
 	end
 
 	def save(file_name)
-		debug_msg "#{self}.#{__method__}(#{file_name})"
+		info_msg "#{self}.#{__method__}(#{file_name})"
 	end
 
 	private
@@ -66,7 +66,7 @@ class VirtualBook
 end
 
 
-Msg.debug '~~~~~~~~~~~~ блоком ~~~~~~~~~~~~'
+Msg.info '~~~~~~~~~~~~ блоком ~~~~~~~~~~~~'
 
 VirtualBook.create do |book|
 	book.title = 'Книга'
@@ -89,8 +89,8 @@ VirtualBook.create do |book|
 end.create_epub.save('opennet')
 
 
-#~ Msg.debug ''
-#~ Msg.debug '~~~~~~~~~~~~ переменными ~~~~~~~~~~~~'
+#~ Msg.info ''
+#~ Msg.info '~~~~~~~~~~~~ переменными ~~~~~~~~~~~~'
 #~ 
 #~ vb = VirtualBook.new
 #~ vb.title = 'Вторая книга'
