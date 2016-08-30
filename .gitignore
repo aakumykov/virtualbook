@@ -1,2 +1,6 @@
 *.html
 *.htm
+
+.ruby-gemset
+.ruby-version
+
